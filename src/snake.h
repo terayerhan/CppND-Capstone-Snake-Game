@@ -1,12 +1,11 @@
-#ifndef SNAKE_H
-#define SNAKE_H
+#pragma once
 
 #include <vector>
-#include "SDL.h"
+#include "Entity.h"
 
-class Snake {
+class Snake : public Entity {
  public:
-  enum class Direction { kUp, kDown, kLeft, kRight };
+  enum class Direction { kUp, kDown, kLeft, kRight }; // You may want to move this to Type.h
 
   Snake(int grid_width, int grid_height)
       : grid_width(grid_width),
@@ -17,24 +16,41 @@ class Snake {
   void Update();
 
   void GrowBody();
-  bool SnakeCell(int x, int y);
 
-  Direction direction = Direction::kUp;
+  // checks if coordinates collide with snake's body. You may want to change the name
+  bool SnakeCell(int x, int y); 
 
-  float speed{0.1f};
-  int size{1};
-  bool alive{true};
-  float head_x;
-  float head_y;
-  std::vector<SDL_Point> body;
+  const std::vector<SDL_Point>& GetBodyCells() const;
+  SDL_Point GetHeadCell() const;
+  float GetHeadX() const;
+  float GetHeadY() const;
+  Direction GetDirection() const;
+  bool IsActive() const override;
+  float GetSpeed() const;
+  int GetHealth() const;
 
- private:
+  virtual void Die();
+  virtual void Grow();
+  virtual void Shrink(int amount = 1);
+  virtual void ReduceHealth(int amount);
+  virtual void SlowDown(float factor);
+  virtual void SpeedUp(float factor);
+  
+
+ protected:
   void UpdateHead();
   void UpdateBody(SDL_Point &current_cell, SDL_Point &prev_cell);
 
-  bool growing{false};
-  int grid_width;
+  Direction _direction = Direction::kUp;
+
+  float _speed{0.1f};
+  int _size{1};
+  bool _alive{true};
+  float _head_x;
+  float _head_y;
+  std::vector<SDL_Point> _body_cells;
+  bool _growing{false};
+  int grid_width;  // You may want to move the grid to the Entity class.
   int grid_height;
 };
 
-#endif
