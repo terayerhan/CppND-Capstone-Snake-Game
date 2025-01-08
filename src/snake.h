@@ -2,16 +2,14 @@
 
 #include <vector>
 #include "Entity.h"
+#include "grid.h"
 
 class Snake : public Entity {
  public:
   enum class Direction { kUp, kDown, kLeft, kRight }; // You may want to move this to Type.h
 
-  Snake(int grid_width, int grid_height)
-      : grid_width(grid_width),
-        grid_height(grid_height),
-        head_x(grid_width / 2),
-        head_y(grid_height / 2) {}
+  Snake(const Grid& grid)
+      : _grid(grid) {}
 
   void Update();
 
@@ -22,12 +20,12 @@ class Snake : public Entity {
 
   const std::vector<SDL_Point>& GetBodyCells() const;
   SDL_Point GetHeadCell() const;
-  float GetHeadX() const;
-  float GetHeadY() const;
-  Direction GetDirection() const;
-  bool IsActive() const override;
-  float GetSpeed() const;
-  int GetHealth() const;
+  float GetHeadX() const {return _head_x;}
+  float GetHeadY() const {return _head_y;}
+  Direction GetDirection() const{return _direction;}
+  bool IsActive() const override {return _alive;}
+  float GetSpeed() const {return _speed;}
+  int GetHealth() const {return _health;}
 
   virtual void Die();
   virtual void Grow();
@@ -41,16 +39,16 @@ class Snake : public Entity {
   void UpdateHead();
   void UpdateBody(SDL_Point &current_cell, SDL_Point &prev_cell);
 
-  Direction _direction = Direction::kUp;
+  Direction _direction; //Game should control direction initial value
 
   float _speed{0.1f};
-  int _size{1};
+  int _size;            //Game should control size initial value
   bool _alive{true};
   float _head_x;
   float _head_y;
   std::vector<SDL_Point> _body_cells;
   bool _growing{false};
-  int grid_width;  // You may want to move the grid to the Entity class.
-  int grid_height;
+  int _health;          //Review the need for _health or how to implement it.
+  const Grid& _grid;
 };
 
