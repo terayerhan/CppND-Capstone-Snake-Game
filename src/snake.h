@@ -13,8 +13,6 @@ class Snake : public Entity {
 
   void Update();
 
-  void GrowBody();
-
   // checks if coordinates collide with snake's body. You may want to change the name
   bool SnakeCell(int x, int y); 
 
