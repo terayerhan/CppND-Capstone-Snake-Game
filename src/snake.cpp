@@ -20,27 +20,28 @@ void Snake::Update() {
 }
 
 void Snake::UpdateHead() {
-  switch (direction) {
+  switch (_direction) {
     case Direction::kUp:
-      head_y -= speed;
+      _head_y -= _speed;
       break;
 
     case Direction::kDown:
-      head_y += speed;
+      _head_y += _speed;
       break;
 
     case Direction::kLeft:
-      head_x -= speed;
+      _head_x -= _speed;
       break;
 
     case Direction::kRight:
-      head_x += speed;
+      _head_x += _speed;
       break;
   }
 
-  // Wrap the Snake around to the beginning if going off of the screen.
-  head_x = fmod(head_x + grid_width, grid_width);
-  head_y = fmod(head_y + grid_height, grid_height);
+  // Wrap the Snake around to the beginning if going off of the screen.  
+  std::pair<float, float> head_xy = _grid.WrapPosition(_head_x, _head_y);
+  _head_x = head_xy.first;
+  _head_y = head_xy.second;
 }
 
 void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) {
