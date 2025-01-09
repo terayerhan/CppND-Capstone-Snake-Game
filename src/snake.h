@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <algorithm> // For std::clamp
+
 #include "Entity.h"
 #include "grid.h"
 
@@ -8,8 +10,13 @@ class Snake : public Entity {
  public:
   enum class Direction { kUp, kDown, kLeft, kRight }; // You may want to move this to Type.h
 
-  Snake(const Grid& grid)
-      : _grid(grid) {}
+  Snake(const Grid& grid, float initialSpeed, float deltaSpeedLimit)
+      : _grid(grid),
+        // Clamp deltaSpeed during initialization
+        _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f)) 
+  {
+        SetSpeed(initialSpeed);  // Clamp speed during initialization
+  } 
 
   void Update();
 
@@ -20,7 +27,7 @@ class Snake : public Entity {
   SDL_Point GetHeadCell() const;
   float GetHeadX() const {return _head_x;}
   float GetHeadY() const {return _head_y;}
-  Direction GetDirection() const{return _direction;}
+  //Direction GetDirection() const{return _direction;} //For now _direction is public so no need.
   bool IsActive() const override {return _alive;}
   float GetSpeed() const {return _speed;}
   int GetHealth() const {return _health;}
@@ -31,15 +38,51 @@ class Snake : public Entity {
   virtual void ReduceHealth(int amount);
   virtual void SlowDown(float factor);
   virtual void SpeedUp(float factor);
+
+  ~Snake() override = default;
+
+  // Inline getter for speed
+  inline float GetSpeed() const {
+      return _speed;
+  }
+
+  // Inline getter for deltaSpeed
+  inline float GetDeltaSpeed() const {
+      return _delta_speed;
+  }
+
+  // Accelerate: Increases speed by deltaSpeed, clamped to 0.999
+  inline void Accelerate() {
+      SetSpeed(_speed + _delta_speed);
+  }
+
+  // Decelerate: Decreases speed by deltaSpeed, clamped to 0.01
+  inline void Decelerate() {
+      SetSpeed(_speed - _delta_speed);
+  }
+
+  /* I have left _direction public for now since I am concerned about input latency.
+     I could change it later to protected with public getter and setters
+  */
+  Direction _direction; //Game should control direction initial value
   
 
  protected:
   void UpdateHead();
   void UpdateBody(SDL_Point &current_cell, SDL_Point &prev_cell);
 
-  Direction _direction; //Game should control direction initial value
+  // Inline setter for speed with clamping logic
+  inline void SetSpeed(float newSpeed) {
+      /* Clamp speed to the range [0.01, 0.999] to prevent snakes heads from
+         jumping cells which could lead to snakes phasing through obstacles 
+         when they have speed of 1 or above. This top limit can be remove when 
+         mechanisms are put in place to handle detecting collision when snakes 
+         heads can move 1 cell or more per step or game update.
+      */ 
+      _speed = std::clamp(newSpeed, 0.01F, 0.999F);
+  }
 
-  float _speed{0.1f};
+   
   int _size;            //Game should control size initial value
   bool _alive{true};
   float _head_x;
@@ -48,5 +91,9 @@ class Snake : public Entity {
   bool _growing{false};
   int _health;          //Review the need for _health or how to implement it.
   const Grid& _grid;
+
+ private:
+  float _speed;               // Current speed of the snake
+  const float _delta_speed;   // Immutable rate of change of speed
 };
 
