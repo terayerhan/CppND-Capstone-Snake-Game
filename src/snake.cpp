@@ -66,15 +66,13 @@ void Snake::UpdateBody(const SDL_Point &currentHeadCell) {
 
 void Snake::Grow() { _growing = true; }
 
-// Inefficient method to check if cell is occupied by snake.
-bool Snake::IsSnakeCell(int x, int y) {
-  if (x == static_cast<int>(head_x) && y == static_cast<int>(head_y)) {
-    return true;
-  }
-  for (auto const &item : body) {
-    if (x == item.x && y == item.y) {
-      return true;
-    }
-  }
-  return false;
+// Check if cell with coordinate (x, y) is part of this Snake's body.
+bool Snake::IsSnakeCell(const int x, const int y) {
+  if(std::find_if(_body_cells.begin(), _body_cells.end(), [&x, &y](const SDL_Point& cell) {
+      return cell.x == x && cell.y == y; }) != _body_cells.end()) {
+
+    return true; //Cell is part of this Snake's body.
+  };
+
+  return false; // Cell is not part of this Snake's body.
 }
