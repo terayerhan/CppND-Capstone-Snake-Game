@@ -21,7 +21,7 @@ class Snake : public Entity {
   void Update();
 
   // checks if coordinates collide with snake's body. You may want to change the name
-  bool SnakeCell(int x, int y); 
+  bool IsSnakeCell(int x, int y); 
 
   const std::vector<SDL_Point>& GetBodyCells() const;
   SDL_Point GetHeadCell() const;
