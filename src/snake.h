@@ -69,7 +69,7 @@ class Snake : public Entity {
 
  protected:
   void UpdateHead();
-  void UpdateBody(SDL_Point &current_cell, SDL_Point &prev_cell);
+  void UpdateBody(const SDL_Point &currentHeadCell);
 
   // Inline setter for speed with clamping logic
   inline void SetSpeed(float newSpeed) {

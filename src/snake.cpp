@@ -3,19 +3,16 @@
 #include <iostream>
 
 void Snake::Update() {
-  SDL_Point prev_cell{
-      static_cast<int>(head_x),
-      static_cast<int>(
-          head_y)};  // We first capture the head's cell before updating.
+  SDL_Point& previousHeadCell = _body_cells.back();  // We first capture the head's cell before updating.
   UpdateHead();
-  SDL_Point current_cell{
-      static_cast<int>(head_x),
-      static_cast<int>(head_y)};  // Capture the head's cell after updating.
+  SDL_Point currentHeadCell{
+      static_cast<int>(_head_x),
+      static_cast<int>(_head_y)};  // Capture the head's cell after updating.
 
   // Update all of the body vector items if the snake head has moved to a new
   // cell.
-  if (current_cell.x != prev_cell.x || current_cell.y != prev_cell.y) {
-    UpdateBody(current_cell, prev_cell);
+  if (currentHeadCell.x != previousHeadCell.x || currentHeadCell.y != previousHeadCell.y) {
+    UpdateBody(currentHeadCell);
   }
 }
 
@@ -44,23 +41,26 @@ void Snake::UpdateHead() {
   _head_y = head_xy.second;
 }
 
-void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) {
+void Snake::UpdateBody(const SDL_Point &currentHeadCell) {
   // Add previous head location to vector
-  body.push_back(prev_head_cell);
+  _body_cells.push_back(currentHeadCell);
 
-  if (!growing) {
+  if (!_growing) {
     // Remove the tail from the vector.
-    body.erase(body.begin());
+    _body_cells.erase(_body_cells.begin());
   } else {
-    growing = false;
-    size++;
+    _growing = false;
+    _size++;
   }
 
   // Check if the snake has died.
-  for (auto const &item : body) {
-    if (current_head_cell.x == item.x && current_head_cell.y == item.y) {
-      alive = false;
-    }
+  if (_body_cells.size() > 1) { // If there's only one element or none, the head can't overlap with the body        
+    // The head is the last element in the vector
+    if(std::find_if(_body_cells.begin(), _body_cells.end() - 1, [&currentHeadCell](const SDL_Point& point) {
+        return point.x == currentHeadCell.x && point.y == currentHeadCell.y; }) != (_body_cells.end() - 1)) {
+          
+      _alive = false;
+    };
   }
 }
 
