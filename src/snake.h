@@ -18,11 +18,10 @@ class Snake : public Entity {
         SetSpeed(initialSpeed);  // Clamp speed during initialization
   } 
 
-  void Update();
+  void Update() override;
 
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsSnakeCell(const int x, const int y); 
-
   const std::vector<SDL_Point>& GetBodyCells() const;
   SDL_Point GetHeadCell() const;
   float GetHeadX() const {return _head_x;}
@@ -32,6 +31,7 @@ class Snake : public Entity {
   //float GetSpeed() const {return _speed;}
   int GetHealth() const {return _health;}
 
+  /* Collision Matrix Implications*/
   virtual void Die();
   virtual void Grow();
   virtual void Shrink(int amount = 1);
@@ -42,24 +42,16 @@ class Snake : public Entity {
   ~Snake() override = default;
 
   // Inline getter for speed
-  inline float GetSpeed() const {
-      return _speed;
-  }
+  inline float GetSpeed() const { return _speed; }
 
   // Inline getter for deltaSpeed
-  inline float GetDeltaSpeed() const {
-      return _delta_speed;
-  }
+  inline float GetDeltaSpeed() const { return _delta_speed; }
 
   // Accelerate: Increases speed by deltaSpeed, clamped to 0.999
-  inline void Accelerate() {
-      SetSpeed(_speed + _delta_speed);
-  }
+  inline void Accelerate() { SetSpeed(_speed + _delta_speed); }
 
   // Decelerate: Decreases speed by deltaSpeed, clamped to 0.01
-  inline void Decelerate() {
-      SetSpeed(_speed - _delta_speed);
-  }
+  inline void Decelerate() { SetSpeed(_speed - _delta_speed); }
 
   /* I have left _direction public for now since I am concerned about input latency.
      I could change it later to protected with public getter and setters
