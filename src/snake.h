@@ -29,7 +29,7 @@ class Snake : public Entity {
   float GetHeadY() const {return _head_y;}
   //Direction GetDirection() const{return _direction;} //For now _direction is public so no need.
   bool IsActive() const override {return _alive;}
-  float GetSpeed() const {return _speed;}
+  //float GetSpeed() const {return _speed;}
   int GetHealth() const {return _health;}
 
   virtual void Die();
