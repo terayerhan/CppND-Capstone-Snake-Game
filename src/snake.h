@@ -19,6 +19,7 @@ class Snake : public Entity {
   } 
 
   void Update() override;
+  bool HasSelfCollision();
 
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsSnakeCell(const int x, const int y); 

@@ -52,19 +52,30 @@ void Snake::UpdateBody(const SDL_Point &currentHeadCell) {
     _growing = false;
     _size++;
   }
-
-  // Check if the snake has died.
-  if (_body_cells.size() > 1) { // If there's only one element or none, the head can't overlap with the body        
-    // The head is the last element in the vector
-    if(std::find_if(_body_cells.begin(), _body_cells.end() - 1, [&currentHeadCell](const SDL_Point& point) {
-        return point.x == currentHeadCell.x && point.y == currentHeadCell.y; }) != (_body_cells.end() - 1)) {
-          
-      _alive = false;
-    };
-  }
+  
 }
 
+
+bool Snake::HasSelfCollision() {
+  /* Head cell is part of Snake's body, so only search the body cells for head collision with itself
+     if snake's size is greater than 1.
+  */ 
+  if (_body_cells.size() <= 1) {
+      return false; // No self-collision: Snake is only one cell, hence it cannot collide with itself.
+  }
+
+  SDL_Point currentHead{static_cast<int>(_head_x), static_cast<int>(_head_y)};
+  
+  // Use "_body_cells.end() - 1" because head cell is last element in _body_cell vector.
+  return std::any_of(_body_cells.begin(), _body_cells.end() - 1,
+      [&currentHead](const auto& cell) {
+          return cell.x == currentHead.x && cell.y == currentHead.y;
+      });
+}
+
+
 void Snake::Grow() { _growing = true; }
+
 
 // Check if cell with coordinate (x, y) is part of this Snake's body.
 bool Snake::IsSnakeCell(const int x, const int y) {
