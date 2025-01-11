@@ -34,7 +34,7 @@ class Snake : public Entity {
 
   /* Collision Matrix Implications*/
   virtual void Die();
-  virtual void Grow();
+  virtual void Grow() { _growing = true; }
   virtual void Shrink(int amount = 1);
   virtual void ReduceHealth(int amount);
   virtual void SlowDown(float factor);

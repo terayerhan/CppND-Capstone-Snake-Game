@@ -74,9 +74,6 @@ bool Snake::HasSelfCollision() {
 }
 
 
-void Snake::Grow() { _growing = true; }
-
-
 // Check if cell with coordinate (x, y) is part of this Snake's body.
 bool Snake::IsSnakeCell(const int x, const int y) {
   if(std::find_if(_body_cells.begin(), _body_cells.end(), [&x, &y](const SDL_Point& cell) {
