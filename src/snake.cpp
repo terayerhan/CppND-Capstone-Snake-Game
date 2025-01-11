@@ -64,12 +64,13 @@ bool Snake::HasSelfCollision() {
       return false; // No self-collision: Snake is only one cell, hence it cannot collide with itself.
   }
 
-  SDL_Point currentHead{static_cast<int>(_head_x), static_cast<int>(_head_y)};
+  int headX = static_cast<int>(_head_x);
+  int headY = static_cast<int>(_head_y);
   
   // Use "_body_cells.end() - 1" because head cell is last element in _body_cell vector.
   return std::any_of(_body_cells.begin(), _body_cells.end() - 1,
-      [&currentHead](const auto& cell) {
-          return cell.x == currentHead.x && cell.y == currentHead.y;
+      [headX, headY](const auto& cell) {
+          return cell.x == headX && cell.y == headY;
       });
 }
 
