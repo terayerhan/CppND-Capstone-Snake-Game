@@ -24,7 +24,7 @@ class Snake : public Entity {
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsSnakeCell(const int x, const int y); 
   const std::vector<SDL_Point>& GetBodyCells() const {return _body_cells;}
-  
+
   SDL_Point GetHeadCell() const {
     return SDL_Point{
         static_cast<int>(_head_x),
@@ -44,9 +44,7 @@ class Snake : public Entity {
   virtual void Grow() { _growing = true; }
   virtual void Shrink(int amount = 1);
   virtual void ReduceHealth(int amount);
-  virtual void SlowDown(float factor);
-  virtual void SpeedUp(float factor);
-
+  
   ~Snake() override = default;
 
   // Inline getter for speed
