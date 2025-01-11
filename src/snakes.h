@@ -31,8 +31,7 @@ class ObstacleSnake : public Snake {
     EntityType GetType() const override { return EntityType::ObstacleSnake;}
 
  protected:
-    // Custom UpadateBody for ObstacleSnake that is slightly different from default Snake.
-    void UpdateBody(const SDL_Point &currentHeadCell) override;
+    
 };
 
 
@@ -51,7 +50,7 @@ class  AISnake : public Snake {
     ~AISnake() override = default;
 
     EntityType GetType() const override { return EntityType::AISnake;}
-    
+
  protected:
   
 
