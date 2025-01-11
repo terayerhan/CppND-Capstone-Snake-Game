@@ -24,7 +24,14 @@ class Snake : public Entity {
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsSnakeCell(const int x, const int y); 
   const std::vector<SDL_Point>& GetBodyCells() const {return _body_cells;}
-  SDL_Point GetHeadCell() const;
+  
+  SDL_Point GetHeadCell() const {
+    return SDL_Point{
+        static_cast<int>(_head_x),
+        static_cast<int>(_head_y)
+    };
+  }
+
   float GetHeadX() const {return _head_x;}
   float GetHeadY() const {return _head_y;}
   //Direction GetDirection() const{return _direction;} //For now _direction is public so no need.
