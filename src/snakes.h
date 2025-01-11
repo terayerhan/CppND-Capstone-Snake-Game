@@ -29,10 +29,31 @@ class ObstacleSnake : public Snake {
     ~ObstacleSnake() override = default;
 
     EntityType GetType() const override { return EntityType::ObstacleSnake;}
-    
+
  protected:
     // Custom UpadateBody for ObstacleSnake that is slightly different from default Snake.
     void UpdateBody(const SDL_Point &currentHeadCell) override;
 };
 
 
+/* AISnake: Snake controlled by the Game/computer that competes for the food with the 
+   PlayerSnake. 
+
+   AISnake uses a custom A* Search algorithm to find the optimal path to the Food while
+   avoiding other Snakes in the game including Obstacles and PlayerSnake.
+*/
+class  AISnake : public Snake {
+ public:
+    AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit) 
+        : Snake(grid, initialSpeed, deltaSpeedLimit) {    
+    }
+
+    ~AISnake() override = default;
+
+    EntityType GetType() const override { return EntityType::AISnake;}
+    
+ protected:
+  
+
+};
+    
