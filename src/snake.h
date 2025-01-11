@@ -56,8 +56,12 @@ class Snake : public Entity {
   // Accelerate: Increases speed by deltaSpeed, clamped to 0.999
   inline void Accelerate() { SetSpeed(_speed + _delta_speed); }
 
+  inline void Accelerate(float increment) { SetSpeed(_speed + increment); }
+
   // Decelerate: Decreases speed by deltaSpeed, clamped to 0.01
   inline void Decelerate() { SetSpeed(_speed - _delta_speed); }
+  
+  inline void Decelerate(float decrement) { SetSpeed(_speed - decrement); }
 
   /* I have left _direction public for now since I am concerned about input latency.
      I could change it later to protected with public getter and setters
