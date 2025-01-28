@@ -26,6 +26,12 @@ struct Node {
 
 };
 
+struct NodeCompare {
+   bool operator()(const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) {
+      return a->fCost_ > b->fCost_;  // Inverted for min-heap priority_queue.
+   }
+};
+
 // PlayerSnake: Snake Controlled by the User.
 class PlayerSnake : public Snake {
  public:
