@@ -5,6 +5,7 @@
 
 #include "Entity.h"
 #include "grid.h"
+#include "sdl_point_operators.h"
 
 class Snake : public Entity {
  public:
