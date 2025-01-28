@@ -9,8 +9,6 @@
 
 class Snake : public Entity {
  public:
-  enum class Direction { kUp, kDown, kLeft, kRight }; // You may want to move this to Type.h
-
   Snake(const Grid& grid, float initialSpeed, float deltaSpeedLimit)
       : _grid(grid),
         // Clamp deltaSpeed during initialization

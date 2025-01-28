@@ -9,6 +9,8 @@ enum class EntityType {
     Food
 };
 
+enum class Direction { kUp, kDown, kLeft, kRight }; 
+
 // Hash function for pairs
 struct PairHash {
     template <typename T1, typename T2>
