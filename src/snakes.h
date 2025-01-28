@@ -7,22 +7,22 @@
 #include <memory>
 
 struct Node {
-    SDL_Point cell_;
-    size_t gCost_;             // TimeSteps to reach node.
-    size_t fCost_;             // fCost_ = gCost_ + CalculateHeuristic().
+   SDL_Point cell_;
+   size_t gCost_;             // TimeSteps to reach node.
+   size_t fCost_;             // fCost_ = gCost_ + CalculateHeuristic().
 
-    // Actual position of Snake's head within a the cell_.
-    float headX_;
-    float headY_; 
+   // Actual position of Snake's head within a the cell_.
+   float headX_;
+   float headY_; 
 
-    Direction direction_; // Direction used to move from parent-Node to this Node[point with headX_, headY_].
+   Direction direction_; // Direction used to move from parent-Node to this Node[point with headX_, headY_].
 
-    std::shared_ptr<Node> parent_;
+   std::shared_ptr<Node> parent_;
 
-    Node(SDL_Point cell, size_t gCost, size_t fCost, float headX, float headY, Direction direction,
-         std::shared_ptr<Node> parent
-        ) : cell_(cell), gCost_(gCost), fCost_(fCost), headX_(headX), headY_(headY), direction_(direction),
-            parent_(parent) {}        
+   Node(SDL_Point cell, size_t gCost, size_t fCost, float headX, float headY, Direction direction,
+      std::shared_ptr<Node> parent
+      ) : cell_(cell), gCost_(gCost), fCost_(fCost), headX_(headX), headY_(headY), direction_(direction),
+         parent_(parent) {}        
 
 };
 
