@@ -2,6 +2,9 @@
 
 #include "snake.h"
 
+#include <unordered_set>
+#include <unordered_map>
+
 // PlayerSnake: Snake Controlled by the User.
 class PlayerSnake : public Snake {
  public:
@@ -61,6 +64,15 @@ class  AISnake : public Snake {
   const std::vector<Snake>& _obstacles;
   const Snake& _playerSnake;
   const Entity& _food;
+
+  // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
+  std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstacleBlockedCells;
+
+  // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Player snake
+  std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedPlayerBlockedCells;
+
+  /* The food in this current implementation remains in one place. Hence, there is no need to predict its
+     future positions. */
 
 };
     
