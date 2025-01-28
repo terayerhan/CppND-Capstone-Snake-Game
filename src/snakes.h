@@ -43,16 +43,24 @@ class ObstacleSnake : public Snake {
 */
 class  AISnake : public Snake {
  public:
-    AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit) 
-        : Snake(grid, initialSpeed, deltaSpeedLimit) {    
-    }
+    AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit,
+            const std::vector<Snake>& obstacles, const Snake& playerSnake,
+            const Entity& food
+            )   
+        : Snake(grid, initialSpeed, deltaSpeedLimit),
+          _obstacles(obstacles),
+          _playerSnake(playerSnake),
+          _food(food)        
+    { }
 
     ~AISnake() override = default;
 
     EntityType GetType() const override { return EntityType::AISnake;}
 
- protected:
-  
+ private:
+  const std::vector<Snake>& _obstacles;
+  const Snake& _playerSnake;
+  const Entity& _food;
 
 };
     
