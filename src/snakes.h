@@ -73,33 +73,45 @@ class ObstacleSnake : public Snake {
 */
 class  AISnake : public Snake {
  public:
-    AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit,
-            const std::vector<Snake>& obstacles, const Snake& playerSnake,
-            const Entity& food
-            )   
-        : Snake(grid, initialSpeed, deltaSpeedLimit),
-          _obstacles(obstacles),
-          _playerSnake(playerSnake),
-          _food(food)        
-    { }
+   AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit,
+         const std::vector<Snake>& obstacles, const Snake& playerSnake,
+         const Entity& food
+          ) :  Snake(grid, initialSpeed, deltaSpeedLimit),
+               _obstacles(obstacles),
+               _playerSnake(playerSnake),
+               _food(food)        
+   { }
 
-    ~AISnake() override = default;
+   ~AISnake() override = default;
 
-    EntityType GetType() const override { return EntityType::AISnake;}
+   EntityType GetType() const override { return EntityType::AISnake;}
+
+   void FindPath();
+   void SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged, bool IsObstaclesChanged);
 
  private:
-  const std::vector<Snake>& _obstacles;
-  const Snake& _playerSnake;
-  const Entity& _food;
+   const std::vector<Snake>& _obstacles;
+   const Snake& _playerSnake;
+   const Entity& _food;
 
-  // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
-  std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstacleBlockedCells;
+   // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
+   std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstacleBlockedCells;
 
-  // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Player snake
-  std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedPlayerBlockedCells;
+   // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Player snake
+   std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedPlayerBlockedCells;
 
-  /* The food in this current implementation remains in one place. Hence, there is no need to predict its
-     future positions. */
+   /* The food in this current implementation remains in one place. Hence, there is no need to predict its
+      future positions. 
+   */
+
+   void GenerateBlockedCells(size_t fromTimeStep, size_t toTimeStep);
+   std::shared_ptr<Node> AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
+                                 std::vector<SDL_Point>& currentBodyCells
+                                 );
+
+   
+   void ReviewPath();
+  
 
 };
     
