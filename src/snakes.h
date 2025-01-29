@@ -94,6 +94,10 @@ class  AISnake : public Snake {
    const Snake& _playerSnake;
    const Entity& _food;
 
+   // Path related variables
+   std::vector<Direction> _pathDirections;   // For use in the SetDirection() to guide AISnake to food cell.
+   std::vector<SDL_Point> _pathCells;        // Intended for use to review path when playerSnake changes direction.
+
    // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
    std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstacleBlockedCells;
 
