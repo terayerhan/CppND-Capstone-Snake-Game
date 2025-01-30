@@ -4,10 +4,10 @@
 
 class Grid {
  public:
-    Grid(int width, int height);
+    Grid(size_t width, size_t height);
 
-    int GetWidth() const { return _width; }
-    int GetHeight() const { return _height; }
+    size_t GetWidth() const { return _width; }
+    size_t GetHeight() const { return _height; }
 
     // Wraps floating point coordinates
     std::pair<float, float> WrapPosition(float x, float y) const;
@@ -17,8 +17,8 @@ class Grid {
 
  private:    
     /* data */
-    int _width;
-    int _height;
+    size_t _width;
+    size_t _height;
     
 };
 

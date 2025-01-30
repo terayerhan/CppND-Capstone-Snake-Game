@@ -1,12 +1,13 @@
 #include "grid.h"
 #include "sdl_point_operators.h"
 
-Grid::Grid(int width, int height) : _width(width), _height(height) {
+Grid::Grid(size_t width, size_t height) : _width(width), _height(height) {
     // Initialize grid width for hash function
     SDLPointHash::grid_width = width;
 }
 
 std::pair<float, float> Grid::WrapPosition(float x, float y) const {
+    // Wraps coordinates around the grid boundaries (toroidal wrapping).
     if (x < 0) x += _width;
     if (x >= _width) x -= _width;
     if (y < 0) y += _height;
