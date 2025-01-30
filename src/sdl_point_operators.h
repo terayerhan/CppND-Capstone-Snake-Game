@@ -34,7 +34,7 @@ inline bool operator>=(const SDL_Point& lhs, const SDL_Point& rhs) {
 
 // Hash function optimized for grid-based games (needed for unordered_set)
 struct SDLPointHash {
-    static int grid_width;
+    static size_t grid_width;
     
     std::size_t operator()(const SDL_Point& p) const {
         return p.x * grid_width + p.y;
