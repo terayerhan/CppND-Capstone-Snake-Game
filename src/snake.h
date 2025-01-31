@@ -17,7 +17,7 @@ class Snake : public Entity {
         SetSpeed(initialSpeed);  // Clamp speed during initialization
   } 
 
-  void Update() override;
+  void Update();
   bool HasSelfCollision();
 
   // checks if coordinates collide with snake's body. You may want to change the name

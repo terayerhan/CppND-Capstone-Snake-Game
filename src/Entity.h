@@ -8,6 +8,5 @@ public:
     virtual EntityType GetType() const = 0;
     virtual SDL_Point GetPosition() const = 0;
     virtual bool IsActive() const = 0;
-    virtual void Update() = 0;
-    virtual void Render() = 0;
+    
 };
