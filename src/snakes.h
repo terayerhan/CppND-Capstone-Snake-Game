@@ -1,5 +1,8 @@
 #pragma once
 
+// Forward declarations
+class Game;
+
 #include "snake.h"
 
 #include <unordered_set>
@@ -43,6 +46,25 @@ class PlayerSnake : public Snake {
         
     EntityType GetType() const override { return EntityType::PlayerSnake;}
  
+};
+
+class Food : public Entity {
+ public:
+   ~Food() override = default;
+
+   EntityType GetType() const override { return EntityType::Food; }
+   SDL_Point GetPosition() const override { return _position; }
+   inline int GetCellX() const {return _position.x;}
+   inline int GetCellY() const {return _position.y;}
+   bool IsActive() const override { return active; }
+   void Consume() { active = false; }
+   
+   // Makes Game a friend class, giving it access to private members (position in particular)
+   friend class Game;  
+
+ private:
+   bool active;
+   SDL_Point _position;
 };
 
 
