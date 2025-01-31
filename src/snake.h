@@ -10,7 +10,7 @@
 class Snake : public Entity {
  public:
   Snake(const Grid& grid, float initialSpeed, float deltaSpeedLimit)
-      : _gridWidth(grid.GetWidth()), _gridHeight(grid.GetHeight()),
+      : _grid(grid),
         // Clamp deltaSpeed during initialization
         _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f)) 
   {
@@ -91,8 +91,7 @@ class Snake : public Entity {
   std::vector<SDL_Point> _body_cells;
   bool _growing{false};
   int _health;          //Review the need for _health or how to implement it.
-  const size_t& _gridWidth;
-  const size_t& _gridHeight;
+  const Grid& _grid;  
 
  private:
   float _speed;               // Current speed of the snake
