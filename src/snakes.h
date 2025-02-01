@@ -54,8 +54,8 @@ class Food : public Entity {
 
    EntityType GetType() const override { return EntityType::Food; }
    SDL_Point GetPosition() const override { return _position; }
-   inline int GetCellX() const {return _position.x;}
-   inline int GetCellY() const {return _position.y;}
+   int GetCellX() const override {return _position.x;}
+   int GetCellY() const override {return _position.y;}
    bool IsActive() const override { return active; }
    void Consume() { active = false; }
    
