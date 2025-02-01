@@ -24,12 +24,16 @@ class Snake : public Entity {
   bool IsSnakeCell(const int x, const int y); 
   const std::vector<SDL_Point>& GetBodyCells() const {return _body_cells;}
 
-  SDL_Point GetHeadCell() const {
+  // Getter for the Snake's head cell position.
+  SDL_Point GetPosition() const override {
     return SDL_Point{
         static_cast<int>(_head_x),
         static_cast<int>(_head_y)
     };
   }
+
+  int GetCellX() const override {return static_cast<int>(_head_x);}  // Return the snake's head cell's x-coordinate.
+  int GetCellY() const override {return static_cast<int>(_head_y);}  // Return the snake's head cell's y-coordinate.
 
   float GetHeadX() const {return _head_x;}
   float GetHeadY() const {return _head_y;}
