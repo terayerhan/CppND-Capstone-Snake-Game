@@ -130,11 +130,11 @@ class  AISnake : public Snake {
       future positions. 
    */
 
-   size_t CalculateHeuristic(float headX, float headY, const float& speed, 
-                             int goalX, int goalY, int gridWidth, int gridHeight);
+   size_t CalculateHeuristic(const float headX, const float headY, const float& speed, 
+                             const int goalX, const int goalY, const int gridWidth, const int gridHeight);
 
    void GenerateBlockedCells(size_t initialTimeStep, size_t maxTimeStep);
-   
+
    std::shared_ptr<Node> AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
                                  std::vector<SDL_Point>& currentBodyCells
                                  );
