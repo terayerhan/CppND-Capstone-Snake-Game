@@ -1,5 +1,51 @@
 #include "snakes.h"
 
+size_t AISnake::CalculateHeuristic( 
+    const float headX, const float headY, const float& speed,
+    const int goalX, const int goalY, const int gridWidth, const int gridHeight
+) const {
+    // Initialize current cell of snake head
+    int headCellX = static_cast<int>(headX);
+    int headCellY = static_cast<int>(headY);
+
+    std::size_t xSteps = 0;
+    std::size_t ySteps = 0;
+
+    // Calculate minimum number of x-axis steps the snake will need to reach the goal cell X-coordinate.
+    if (goalX > headCellX) {
+        float pdx = goalX - headX;                   // pdx is positive direction motion distance to goal(food) cell.
+        float ndx = headX - goalX - 1 + gridWidth;   // ndx is negative direction motion distance to goal cell.
+
+        //when pdx==ndx, actual ndx>pdx due to right cell edge esclusion.
+        xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1); 
+    }
+    else if (goalX < headCellX) {
+        float pdx = goalX - headX + gridWidth;
+        float ndx = headX - goalX - 1;
+
+        xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1);
+    }
+
+    // Calculate y-axis steps.
+    if (goalY > headCellY) {
+        float pdy = goalY - headY;                    
+        float ndy = headY - goalY - 1 + gridHeight;     
+
+        ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1); 
+        
+    }
+    else if (goalY < headCellY) {
+        float pdy = goalY - headY + gridHeight;
+        float ndy = headY - goalY - 1;
+
+        ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1);
+    }
+
+    // Calculate the Manhattan Distance by Summing the minimum number of steps on the x-axis and y-axis.
+    return xSteps + ySteps;
+}
+
+
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
     std::vector<SDL_Point>& currentBodyCells
     ) {
