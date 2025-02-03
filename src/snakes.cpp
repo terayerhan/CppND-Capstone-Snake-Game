@@ -1,49 +1,86 @@
 #include "snakes.h"
 
+/**
+ * @brief Calculates the heuristic (Manhattan distance in steps) from the snake's head to a goal cell,
+ *        accounting for grid wrap-around.
+ *
+ * This method computes the minimum number of game update steps required for the snake to reach the goal cell.
+ * It does so by calculating the required number of steps along the x-axis and y-axis and then summing them.
+ *
+ * The grid is defined using half-open intervals: each cell along the x- or y-axis spans the interval [n, n+1),
+ * where n is an integer cell index. In other words, a coordinate is considered to be in cell n if it satisfies:
+ *
+ *      n <= coordinate < n+1.
+ *
+ * For example, a coordinate of 1.99999 lies in cell 1, while a coordinate of 2.0000 lies in cell 2.
+ *
+ * The method also accounts for grid wrap-around (toroidal behavior). When the snake moves off one edge,
+ * it reappears on the opposite side. This behavior is handled by comparing both the direct (positive) and 
+ * wrap-around (negative) distances along each axis.
+ *
+ * @param headX      The x-coordinate of the snake's head (fractional position).
+ * @param headY      The y-coordinate of the snake's head (fractional position).
+ * @param speed      The essential distance per step (game update) along one axis that the snake moves.
+ *                   For example, if speed is 1, then each game update moves the snake exactly one cell.
+ * @param goalX      The x-index of the goal cell.
+ * @param goalY      The y-index of the goal cell.
+ * @param gridWidth  The total number of cells along the x-axis in the grid.
+ * @param gridHeight The total number of cells along the y-axis in the grid.
+ *
+ * @return The Manhattan distance in steps (the sum of the minimum steps along both the x-axis and y-axis)
+ *         from the snake's current head position to the goal cell.
+ */
 size_t AISnake::CalculateHeuristic( 
     const float headX, const float headY, const float& speed,
     const int goalX, const int goalY, const int gridWidth, const int gridHeight
 ) const {
-    // Initialize current cell of snake head
+    // Determine the current grid cell of the snake's head.
+    // Casting the head coordinates to int effectively applies the floor function for non-negative values,
+    // which aligns with our half-open interval definition: a coordinate x is in cell n if n <= x < n+1.
     int headCellX = static_cast<int>(headX);
     int headCellY = static_cast<int>(headY);
 
     std::size_t xSteps = 0;
     std::size_t ySteps = 0;
 
-    // Calculate minimum number of x-axis steps the snake will need to reach the goal cell X-coordinate.
+    // Calculate the number of steps along the x-axis.
+    // The grid wraps around, so we consider two distances:
+    //   - pdx: the positive (direct) distance to the goal cell.
+    //   - ndx: the negative (wrap-around) distance to the goal cell.
     if (goalX > headCellX) {
-        float pdx = goalX - headX;                   // pdx is positive direction motion distance to goal(food) cell.
-        float ndx = headX - goalX - 1 + gridWidth;   // ndx is negative direction motion distance to goal cell.
-
-        //when pdx==ndx, actual ndx>pdx due to right cell edge esclusion.
+        float pdx = goalX - headX;                   // Direct distance from head to goal cell.
+        float ndx = headX - goalX - 1 + gridWidth;     // Wrap-around distance.
+        
+        // When pdx equals ndx, the right cell edge exclusion (due to the half-open interval)
+        // makes the effective negative distance larger. Hence, we add 1 step if needed.
         xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1); 
     }
     else if (goalX < headCellX) {
-        float pdx = goalX - headX + gridWidth;
-        float ndx = headX - goalX - 1;
-
+        float pdx = goalX - headX + gridWidth;         // Direct distance considering wrap-around.
+        float ndx = headX - goalX - 1;                   // Negative distance (direct movement).
+        
         xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1);
     }
 
-    // Calculate y-axis steps.
+    // Calculate the number of steps along the y-axis using similar logic.
     if (goalY > headCellY) {
-        float pdy = goalY - headY;                    
-        float ndy = headY - goalY - 1 + gridHeight;     
-
-        ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1); 
+        float pdy = goalY - headY;                     // Direct distance from head to goal cell.
+        float ndy = headY - goalY - 1 + gridHeight;      // Wrap-around distance.
         
+        ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1); 
     }
     else if (goalY < headCellY) {
-        float pdy = goalY - headY + gridHeight;
-        float ndy = headY - goalY - 1;
-
+        float pdy = goalY - headY + gridHeight;        // Direct distance considering wrap-around.
+        float ndy = headY - goalY - 1;                   // Negative distance (direct movement).
+        
         ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1);
     }
 
-    // Calculate the Manhattan Distance by Summing the minimum number of steps on the x-axis and y-axis.
+    // The heuristic is the Manhattan distance: the sum of the minimum number of steps
+    // along both the x-axis and y-axis to reach the goal.
     return xSteps + ySteps;
 }
+
 
 
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
