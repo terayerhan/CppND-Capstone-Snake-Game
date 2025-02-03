@@ -11,8 +11,8 @@ class Game;
 
 struct Node {
    SDL_Point cell_;
-   size_t gCost_;             // TimeSteps to reach node.
-   size_t fCost_;             // fCost_ = gCost_ + CalculateHeuristic().
+   std::size_t gCost_;             // TimeSteps to reach node.
+   std::size_t fCost_;             // fCost_ = gCost_ + CalculateHeuristic().
 
    // Actual position of Snake's head within a the cell_.
    float headX_;
@@ -22,11 +22,13 @@ struct Node {
 
    std::shared_ptr<Node> parent_;
 
-   Node(SDL_Point cell, size_t gCost, size_t fCost, float headX, float headY, Direction direction,
+   // Node constructor.
+   Node(
+      SDL_Point cell, std::size_t gCost, std::size_t fCost, float headX, float headY, Direction direction,
       std::shared_ptr<Node> parent
-      ) : cell_(cell), gCost_(gCost), fCost_(fCost), headX_(headX), headY_(headY), direction_(direction),
-         parent_(parent) {}        
-
+   ) : cell_(cell), gCost_(gCost), fCost_(fCost), headX_(headX), headY_(headY), direction_(direction),
+       parent_(parent) 
+   {}      
 };
 
 struct NodeCompare {
