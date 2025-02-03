@@ -45,33 +45,36 @@ size_t AISnake::CalculateHeuristic(
 
     // Calculate the number of steps along the x-axis.
     // The grid wraps around, so we consider two distances:
-    //   - pdx: the positive (direct) distance to the goal cell.
-    //   - ndx: the negative (wrap-around) distance to the goal cell.
+    //   - pdx: the positive-direction distance to the goal cell.
+    //   - ndx: the negative-direction distance to the goal cell.
     if (goalX > headCellX) {
-        float pdx = goalX - headX;                   // Direct distance from head to goal cell.
-        float ndx = headX - goalX - 1 + gridWidth;     // Wrap-around distance.
+        float pdx = goalX - headX;                   // Positive direction: distance from head to goal.
+        float ndx = headX - goalX - 1 + gridWidth;   // Negative direction: wrapping around the grid.
         
         // When pdx equals ndx, the right cell edge exclusion (due to the half-open interval)
-        // makes the effective negative distance larger. Hence, we add 1 step if needed.
+        // makes the effective negative distance larger. Hence, we add 1 step if needed i.e[
+        // for ndx, if snake lands exactly on the right-edge, i.e actual distance == ndx, then it
+        // will need one more step - no matter how small (snakes can't move more than one cell
+        // distance per step) to reach the goal].
         xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1); 
     }
     else if (goalX < headCellX) {
-        float pdx = goalX - headX + gridWidth;         // Direct distance considering wrap-around.
-        float ndx = headX - goalX - 1;                   // Negative distance (direct movement).
+        float pdx = goalX - headX + gridWidth;        // Positive direction considering wrap-around.
+        float ndx = headX - goalX - 1;                // Negative direction: direct movement.
         
         xSteps = pdx <= ndx ? ceil(pdx / speed) : static_cast<int>((ndx / speed) + 1);
     }
 
-    // Calculate the number of steps along the y-axis using similar logic.
+    // Calculate the number of steps along the y-axis using similar logic to x-axis.
     if (goalY > headCellY) {
-        float pdy = goalY - headY;                     // Direct distance from head to goal cell.
-        float ndy = headY - goalY - 1 + gridHeight;      // Wrap-around distance.
+        float pdy = goalY - headY;                     
+        float ndy = headY - goalY - 1 + gridHeight;     
         
         ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1); 
     }
     else if (goalY < headCellY) {
-        float pdy = goalY - headY + gridHeight;        // Direct distance considering wrap-around.
-        float ndy = headY - goalY - 1;                   // Negative distance (direct movement).
+        float pdy = goalY - headY + gridHeight;        
+        float ndy = headY - goalY - 1;                   
         
         ySteps = pdy <= ndy ? ceil(pdy / speed) : static_cast<int>((ndy / speed) + 1);
     }
