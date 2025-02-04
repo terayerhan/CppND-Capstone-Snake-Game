@@ -1,5 +1,7 @@
 #include "snakes.h"
 
+#include <queue>
+
 /**
  * @brief Calculates the heuristic (Manhattan distance in steps) from the snake's head to a goal cell,
  *        accounting for grid wrap-around.
@@ -249,4 +251,46 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         current
     );
     
+}
+
+
+
+void AISnake::FindPath() {
+    // Priority queue for open set.
+    std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
+
+    /*  To enable backtracking by snake size[- when snake size is greater than 1 otherwise there is no need] 
+        to reconstruct the cells of the snake, create dummy Node shared_ptrs from the body cells that are not 
+        the head; linking them from the tail as base parent up to the neck which will then serve as the parent 
+        to the head based Node that will be placed on the openList as the start Node for the A*Search based 
+        path planning. The parent of the tail based node will be nullptr.
+    */
+    std::vector<std::shared_ptr<Node>> closedList;  // vector to store the dummy node pointers.
+    std::size_t fCost_Max = std::numeric_limits<std::size_t>::max();  // for use as fCost of all dummy nodes.
+
+    // Check if size of snake's body Cells is greater than one otherwise don't create dummy node pointers.
+    std::size_t snakeSize = _body_cells.size();
+    if (snakeSize > 1) {
+        for (std::size_t i=0; i<snakeSize; i++) {
+            if (i > 0) {
+                // Add non-tail based dummy nodes pointers.
+                closedList.push_back(
+                    std::make_shared<Node>(
+                        _body_cells[i], 0, fCost_Max, 0.0f, 0.0f, _direction,
+                        closedList[i-1] // Previous Node(next one closer to tial Node) is the node's parent. 
+                    )
+                );
+            }
+            else {
+                // Add node pointer base on the tail cell of the snake.
+                closedList.push_back(
+                    std::make_shared<Node>(
+                        _body_cells[i], 0, fCost_Max, 0.0f, 0.0f, _direction,
+                        nullptr  // Only the tail cell based node has a nullptr parent.
+                    )
+                );
+            }
+        }
+    }
+
 }
