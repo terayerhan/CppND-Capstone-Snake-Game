@@ -194,8 +194,8 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                    playerSnake and self. 
                 */
                 if (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) ||
-                    std::find(currentBodyCells.rbegin() + 1, currentBodyCells.rend(), nextHeadCell)
-                      != currentBodyCells.rend()
+                    std::find(currentBodyCells.begin() + 1, currentBodyCells.end(), nextHeadCell)
+                      != currentBodyCells.end()
                     ) {
                     return nullptr;
                 }
