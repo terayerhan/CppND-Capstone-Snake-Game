@@ -263,9 +263,10 @@ void AISnake::FindPath() {
         to reconstruct the cells of the snake, create dummy Node shared_ptrs from the body cells that are not 
         the head; linking them from the tail as base parent up to the neck which will then serve as the parent 
         to the head based Node that will be placed on the openList as the start Node for the A*Search based 
-        path planning. The parent of the tail based node will be nullptr.
+        path planning. The parent of the tail based node will be nullptr which will be the first element in
+        the closedList of Node pointer.
     */
-    std::vector<std::shared_ptr<Node>> closedList;  // vector to store the dummy node pointers.
+    std::vector<std::shared_ptr<Node>> closedList{nullptr};  // vector to store the dummy node pointers.
     std::size_t fCost_Max = std::numeric_limits<std::size_t>::max();  // for use as fCost of all dummy nodes.
 
     // Check if size of snake's body Cells is greater than one otherwise don't create dummy node pointers.
@@ -292,5 +293,115 @@ void AISnake::FindPath() {
             }
         }
     }
+
+    SDL_Point goal = _food.GetPosition(); // Cach the food location as goal.
+
+    // Add the start node to the open list
+    openList.push(
+        std::make_shared<Node>(
+            _body_cells.back(), 
+            0, 
+            CalculateHeuristic(
+                _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
+            ),
+            _head_x,
+            _head_y,
+            _direction,
+            closedList[snakeSize-1]
+        )
+    );
+
+
+    while (!openList.empty()) {
+        std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
+        openList.pop();                                  // Remove the node ptr from the openList.
+
+        // Check if goal has been reached.
+        if (current->cell_ == goal) {
+            // Reconstruct the path cells and the directions to take at each step.
+            _pathDirections.clear();   // Clear the vector before adding the new directions.
+            _pathCells.clear();        // Clear the vector before adding the new cells.
+
+            // Backtrack till start node (first node going backwards that have gCost == 0) is reached.
+            std::shared_ptr<Node> nodePtr = current;
+            while (nodePtr->gCost_ > 0) {
+                std::shared_ptr<Node> parentPtr = nodePtr->parent_; 
+                Direction directionToNode = nodePtr->direction_;   // Direction the snake will need to take to reach node.
+
+                // Calculate the steps needed from parent node to this node using via direction to Node.
+                std::size_t stepsInDirection = nodePtr->gCost_ - parentPtr->gCost_;
+
+                // Append directionToNode stepsInDirection times to the _path directions vector.
+                for ( std::size_t i=0; i<stepsInDirection; i++) {
+                    _pathDirections.push_back(directionToNode);
+                }
+
+                // Append the cell(of nodePtr) the snake will arrive at when it take those steps.
+                _pathCells.push_back(nodePtr->cell_);
+
+                nodePtr = parentPtr;   // make parent pointer the current node ptr.
+            }
+
+            return;  // Stop the search. //
+
+        } // end of check for reaching goal.
+
+
+        /* Reconstruct the snake's body when its head is at the current node's cell. For times when 
+           the snake is longer than one cell and it head is not at a node with a cell position that
+           is not more than the snake's body size cell moves from its search  starting head cell, 
+           this is when the nodes constructed from the body cells come into use.
+
+           The reconstructed body is then used to check for collisions with obstacle snakes, player
+           snake, and the snakes head agaist its rest of its body when exploring nodes to add to the
+           open list in the up, down, left and right directions. The reconstructed body is left with 
+           the tail at the back of vector
+
+           The game logic detect that a player or AI snake is penelized when it collides with an 
+           obstacle snake or when the obstacle snake collides with them. For a player or ai snake 
+           is only penelize if it runs into the other's body not when the other runs into its body. 
+        */
+        std::vector<SDL_Point> currentBody;  // Tail is at back of vector. vector is delibrately not reversed.
+        std::shared_ptr<Node> nodePtr = current;
+
+        for (std::size_t i=0; i<snakeSize; i++) {
+            currentBody.push_back(nodePtr->cell_);
+            nodePtr = nodePtr->parent_;
+        }
+
+
+        // Create a vector of possible Directions the snake can move in at any given cell position.
+        std::vector<Direction> possibleDirections {
+            Direction::kUp, Direction::kDown, Direction::kLeft, Direction::kRight
+        };
+
+
+        /* // Explore neighbors. //
+           Explor moving to the next node through each direction from current node float head position.
+        */
+        for (const Direction nextDirection : possibleDirections) {
+            // If the snake is longer than one segment, check if the next direction is
+            // the same as the current node's direction (i.e., the direction of the snake's neck).
+            // This check prevents the snake from reversing onto itself.
+            if (snakeSize > 1 && nextDirection == current->direction_) { 
+                continue; // Skip this direction.
+            }
+
+            // Check validity of nextDirection to add node.
+            // Attempt to create a new node in the specified nextDirection
+            std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBody);
+
+            // If the node was successfully created (i.e., not null), add it to the open list.
+            if (nextNodePtr != nullptr) {
+                // If the node is valid, push its pointer onto the open list (a priority queue).
+                // The open list is used in pathfinding algorithms (e.g., A*) to store nodes that 
+                // are pending exploration.
+                openList.push(nextNodePtr); // Enqueue the node for further processing.
+            } 
+        }
+
+    } 
+
+    // std::cout << "Path NOT Found" << std::endl;
 
 }
