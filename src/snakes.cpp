@@ -254,7 +254,24 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 }
 
 
-
+/**
+ * @brief Finds a path from the snake's head to the food using an A* search algorithm.
+ *
+ * This method uses a priority queue (open list) to perform an A* search over a grid that is
+ * wrap-around (toroidal topology). 
+ *
+ * Key steps:
+ *  - Build a closedList of dummy nodes representing the snake's initial body position on the grid.
+ *  - Initialize the open list with a start node, based on the snake head linked to its reconstructed body.
+ *  - Loop until the open list is empty or the goal (food) is reached.
+ *  - For each node, if the goal is reached, backtrack to reconstruct the path directions and cells.
+ *  - Otherwise, reconstruct the current body configuration and explore all possible directions.
+ *  - Skip the direction that would reverse the snake (if snake size > 1) to avoid self-collision.
+ *  - For each possible direction, attempt to add a new node; if successful, push it to the open list.
+ *
+ * The grid uses half-open intervals [n, n+1) for cell determination. For example, a coordinate
+ * of 1.99999 is in cell 1, while a coordinate of 2.0000 is in cell 2.
+ */
 void AISnake::FindPath() {
     // Priority queue for open set.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
@@ -277,7 +294,11 @@ void AISnake::FindPath() {
                 // Add non-tail based dummy nodes pointers.
                 closedList.push_back(
                     std::make_shared<Node>(
-                        _body_cells[i], 0, fCost_Max, 0.0f, 0.0f, _direction,
+                        _body_cells[i],     // The cell position.
+                        0,                  // gCost is 0(same as start node) for dummy nodes.
+                        fCost_Max,          // fCost is set to the maximum for dummy nodes. 
+                        0.0f, 0.0f,         // Head position (dummy values here).
+                        _direction,         // Initial Snake Direction is maintained by dummy nodes. Its irrelvant.
                         closedList[i-1] // Previous Node(next one closer to tial Node) is the node's parent. 
                     )
                 );
@@ -287,16 +308,17 @@ void AISnake::FindPath() {
                 closedList.push_back(
                     std::make_shared<Node>(
                         _body_cells[i], 0, fCost_Max, 0.0f, 0.0f, _direction,
-                        nullptr  // Only the tail cell based node has a nullptr parent.
+                        nullptr  // For the tail cell, the parent is nullptr.
                     )
                 );
             }
         }
     }
 
-    SDL_Point goal = _food.GetPosition(); // Cach the food location as goal.
+    SDL_Point goal = _food.GetPosition(); // Cach the food location as goal cell.
 
-    // Add the start node to the open list
+    // Create and add the start node to the open list.
+    // The start node is based on the snake's head and uses the last dummy node from the body as its parent.
     openList.push(
         std::make_shared<Node>(
             _body_cells.back(), 
@@ -307,31 +329,32 @@ void AISnake::FindPath() {
             _head_x,
             _head_y,
             _direction,
-            closedList[snakeSize-1]
+            closedList[snakeSize-1]  // The neck (or last dummy node) becomes the parent of the head node.
         )
     );
 
-
+    // Begin A* search: process nodes until the open list is empty.
     while (!openList.empty()) {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
         openList.pop();                                  // Remove the node ptr from the openList.
 
-        // Check if goal has been reached.
+        // Check if goal(food) has been reached.
         if (current->cell_ == goal) {
-            // Reconstruct the path cells and the directions to take at each step.
-            _pathDirections.clear();   // Clear the vector before adding the new directions.
-            _pathCells.clear();        // Clear the vector before adding the new cells.
+            // Reconstruct the path cells and the directions to take at each step in the game loop.//
+            // Clear any previous path directions and cells.
+            _pathDirections.clear();   
+            _pathCells.clear();        
 
             // Backtrack till start node (first node going backwards that have gCost == 0) is reached.
             std::shared_ptr<Node> nodePtr = current;
             while (nodePtr->gCost_ > 0) {
                 std::shared_ptr<Node> parentPtr = nodePtr->parent_; 
-                Direction directionToNode = nodePtr->direction_;   // Direction the snake will need to take to reach node.
+                Direction directionToNode = nodePtr->direction_;   // Direction from the parent to this node.
 
-                // Calculate the steps needed from parent node to this node using via direction to Node.
+                // Determine the number of steps needed from parent node to this node via direction to Node.
                 std::size_t stepsInDirection = nodePtr->gCost_ - parentPtr->gCost_;
 
-                // Append directionToNode stepsInDirection times to the _path directions vector.
+                // Append the same direction repeatedly based on the number of steps.
                 for ( std::size_t i=0; i<stepsInDirection; i++) {
                     _pathDirections.push_back(directionToNode);
                 }
@@ -339,12 +362,12 @@ void AISnake::FindPath() {
                 // Append the cell(of nodePtr) the snake will arrive at when it take those steps.
                 _pathCells.push_back(nodePtr->cell_);
 
-                nodePtr = parentPtr;   // make parent pointer the current node ptr.
+                nodePtr = parentPtr;   // Move to the parent node to continue backtracking.
             }
 
-            return;  // Stop the search. //
+            return;  // Path found, exit the function.
 
-        } // end of check for reaching goal.
+        } 
 
 
         /* Reconstruct the snake's body when its head is at the current node's cell. For times when 
@@ -372,12 +395,15 @@ void AISnake::FindPath() {
 
         // Create a vector of possible Directions the snake can move in at any given cell position.
         std::vector<Direction> possibleDirections {
-            Direction::kUp, Direction::kDown, Direction::kLeft, Direction::kRight
+            Direction::kUp, 
+            Direction::kDown, 
+            Direction::kLeft, 
+            Direction::kRight
         };
 
 
-        /* // Explore neighbors. //
-           Explor moving to the next node through each direction from current node float head position.
+        /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
+           node through each direction from current node float head position.
         */
         for (const Direction nextDirection : possibleDirections) {
             // If the snake is longer than one segment, check if the next direction is
@@ -387,7 +413,6 @@ void AISnake::FindPath() {
                 continue; // Skip this direction.
             }
 
-            // Check validity of nextDirection to add node.
             // Attempt to create a new node in the specified nextDirection
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBody);
 
@@ -402,6 +427,8 @@ void AISnake::FindPath() {
 
     } 
 
+    // If the open list is exhausted without reaching the goal, no path was found.
+    // (Optional: print or handle the "Path NOT Found" case.)
     // std::cout << "Path NOT Found" << std::endl;
 
 }
