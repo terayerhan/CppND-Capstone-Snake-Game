@@ -97,13 +97,16 @@ class ObstacleSnake : public Snake {
 */
 class  AISnake : public Snake {
  public:
-   AISnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit,
-         const std::vector<Snake>& obstacles, const Snake& playerSnake,
-         const Entity& food
-          ) :  Snake(grid, initialSpeed, deltaSpeedLimit),
-               _obstacles(obstacles),
-               _playerSnake(playerSnake),
-               _food(food)        
+   AISnake(
+      const Grid& grid, float initialSpeed, float deltaSpeedLimit,
+      const std::vector<ObstacleSnake>& obstacles, const PlayerSnake& playerSnake,
+      const Food& food
+   ): Snake(grid, initialSpeed, deltaSpeedLimit),
+      _obstacles(obstacles),                    // Read-only reference; no modifications allowed.
+      _playerSnake(playerSnake),                // Read-only reference.
+      _food(food),
+      _predictedObstacles(_obstacles),          // Direct copy for prediction.
+      _predictedPlayerSnake(_playerSnake)       // Direct copy for prediction.
    { }
 
    ~AISnake() override = default;
@@ -114,9 +117,12 @@ class  AISnake : public Snake {
    void SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged, bool IsObstaclesChanged);
 
  private:
-   const std::vector<Snake>& _obstacles;
-   const Snake& _playerSnake;
-   const Entity& _food;
+   const std::vector<ObstacleSnake>& _obstacles;
+   const PlayerSnake& _playerSnake;
+   const Food& _food;
+
+   std::vector<ObstacleSnake> _predictedObstacles;
+   PlayerSnake _predictedPlayerSnake ;
 
    // Path related variables
    std::vector<Direction> _pathDirections;   // For use in the SetDirection() to guide AISnake to food cell.
@@ -137,7 +143,7 @@ class  AISnake : public Snake {
       const int goalX, const int goalY, const int gridWidth, const int gridHeight
    ) const;
 
-   void PredictBlockedCells(size_t initialTimeStep, size_t maxTimeStep);
+   void PredictBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
 
    std::shared_ptr<Node> AddNode( 
       std::shared_ptr<Node> current, Direction nextDirection, 
