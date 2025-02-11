@@ -129,7 +129,7 @@ class  AISnake : public Snake {
    std::vector<SDL_Point> _pathCells;        // Intended for use to review path when playerSnake changes direction.
 
    // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
-   std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstacleBlockedCells;
+   std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstaclesBlockedCells;
 
    // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Player snake
    std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedPlayerBlockedCells;

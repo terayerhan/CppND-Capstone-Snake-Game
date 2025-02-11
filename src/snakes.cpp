@@ -87,6 +87,34 @@ size_t AISnake::CalculateHeuristic(
 }
 
 
+void AISnake::PredictBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
+    // Predict playerSnake blocked cells [potential loop for concurrency]
+    for(std::size_t i = initialTimeStep; i < maxTimeStep; i++) {
+        _predictedPlayerSnake.Update();   // simulate a single time step move.
+
+        // insert the resulting body cells after the step into the unordered_set of player snake blocked cells 
+        // at time step i in the unordered_map for the predictedPlayerBlockedCells
+        _predictedPlayerBlockedCells[i].insert(
+            _predictedPlayerSnake.GetBodyCells().begin(), _predictedPlayerSnake.GetBodyCells().end()
+        );
+    }
+
+    // Predict obstacle Snakes blocked cells
+    for(ObstacleSnake& obstacle : _predictedObstacles) {
+        // [potential loops for concurrency]
+        for(std::size_t i = initialTimeStep; i < maxTimeStep; i++) {
+            obstacle.Update();   // simulate a single time step move.
+
+            // Insert the resulting body_cells after the step into the unordered_set of obstacle snakes
+            // blocked cells at time step i in the unordered_map for the predictedObstaclesBlocked cells
+            _predictedObstaclesBlockedCells[i].insert(
+                obstacle.GetBodyCells().begin(), obstacle.GetBodyCells().end()
+            );
+        }
+    }
+}
+
+
 
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
     std::vector<SDL_Point>& currentBodyCells
@@ -204,11 +232,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         }  // End checking if snake will reach next cell.
 
         // Since head will still be in the current cell, only check collision with Obstacles.
-        if (_predictedObstacleBlockedCells.count(nextTimeStep)) {
+        if (_predictedObstaclesBlockedCells.count(nextTimeStep)) {
                 /* nextTimeStep exist in the blockedCells unordered_maps, check if any ObstacleSnakes will
                    collide with this snake or if this snake will collide with any obstacleSnake.
                 */
-                if (_predictedObstacleBlockedCells[nextTimeStep].count(nextHeadCell) ) {
+                if (_predictedObstaclesBlockedCells[nextTimeStep].count(nextHeadCell) ) {
                     /* Taking this direction from the current node will result in a collision with an 
                        ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
                        to indicate this. 
@@ -230,7 +258,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 ObstacleSnakes will collide with this snake or if this snake will collide with any 
                 obstacleSnake.
             */
-            if (_predictedObstacleBlockedCells[nextTimeStep].count(nextHeadCell)) { return nullptr; }
+            if (_predictedObstaclesBlockedCells[nextTimeStep].count(nextHeadCell)) { return nullptr; }
         }
     } // End of while loop moving snake and checking collisions.
 
