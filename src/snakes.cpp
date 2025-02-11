@@ -182,7 +182,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
             }
             else {
                 /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
-                GenerateBlockedCells(
+                PredictBlockedCells(
                     nextTimeStep,
                     CalculateHeuristic(
                         nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
@@ -218,7 +218,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         }
         else {
             /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
-            GenerateBlockedCells(
+            PredictBlockedCells(
                 nextTimeStep,
                 CalculateHeuristic(
                     nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
