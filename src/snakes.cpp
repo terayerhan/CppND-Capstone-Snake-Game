@@ -345,15 +345,29 @@ void AISnake::FindPath() {
 
     SDL_Point goal = _food.GetPosition(); // Cach the food location as goal cell.
 
+    // Get the initial number of steps it will take to get to the goal if there were no blocked cells.
+    std::size_t initialMaxTimeSteps = CalculateHeuristic(
+        _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
+    );
+
+    // Re-initialize the predicted snake object for simulating move steps to predict blocked cells.
+    _predictedObstacles = _obstacles;
+    _predictedPlayerSnake = _playerSnake;
+
+    // Clear the maps of previouly predicted blocked cells and predict fresh ones.
+    _predictedObstaclesBlockedCells.clear();
+    _predictedPlayerBlockedCells.clear();
+
+    PredictObstacleBlockedCells(0, initialMaxTimeSteps);
+    PredictPlayerBlockedCells(0, initialMaxTimeSteps);
+
     // Create and add the start node to the open list.
     // The start node is based on the snake's head and uses the last dummy node from the body as its parent.
     openList.push(
         std::make_shared<Node>(
             _body_cells.back(), 
-            0, 
-            CalculateHeuristic(
-                _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
-            ),
+            0,                           // Inititial time step from when new path needs to be recalculated.
+            initialMaxTimeSteps,
             _head_x,
             _head_y,
             _direction,
