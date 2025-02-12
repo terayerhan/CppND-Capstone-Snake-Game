@@ -87,7 +87,9 @@ size_t AISnake::CalculateHeuristic(
 }
 
 
-void AISnake::PredictBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
+
+
+void AISnake::PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
     // Predict playerSnake blocked cells [potential loop for concurrency]
     for(std::size_t i = initialTimeStep; i < maxTimeStep; i++) {
         _predictedPlayerSnake.Update();   // simulate a single time step move.
@@ -98,7 +100,11 @@ void AISnake::PredictBlockedCells(std::size_t initialTimeStep, std::size_t maxTi
             _predictedPlayerSnake.GetBodyCells().begin(), _predictedPlayerSnake.GetBodyCells().end()
         );
     }
+}
 
+
+
+void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
     // Predict obstacle Snakes blocked cells
     for(ObstacleSnake& obstacle : _predictedObstacles) {
         // [potential loops for concurrency]
