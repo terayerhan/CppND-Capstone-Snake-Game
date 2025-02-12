@@ -9,6 +9,7 @@
 
 class Snake : public Entity {
  public:
+  // Constructor
   Snake(const Grid& grid, float initialSpeed, float deltaSpeedLimit)
       : _grid(grid),
         // Clamp deltaSpeed during initialization
@@ -16,6 +17,24 @@ class Snake : public Entity {
   {
         SetSpeed(initialSpeed);  // Clamp speed during initialization
   } 
+
+  // Copy Assignment Operator
+  Snake& operator=(const Snake& other) {
+    if (this != &other) {
+      // _grid and _delta_speed are not assigned because they are const.
+      // Note: _grid and _delta_speed remain unchanged.
+      _head_x = other._head_x;
+      _head_y = other._head_y;
+      _body_cells = other._body_cells;
+      _growing = other._growing;
+      _health = other._health;
+      _speed = other._speed;
+      _direction = other._direction;
+      _size = other._size;
+      _alive = other._alive;      
+    }
+    return *this;
+  }
 
   void Update();
   bool HasSelfCollision();
