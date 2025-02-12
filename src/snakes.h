@@ -143,7 +143,8 @@ class  AISnake : public Snake {
       const int goalX, const int goalY, const int gridWidth, const int gridHeight
    ) const;
 
-   void PredictBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
+   void PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
+   void PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
 
    std::shared_ptr<Node> AddNode( 
       std::shared_ptr<Node> current, Direction nextDirection, 
