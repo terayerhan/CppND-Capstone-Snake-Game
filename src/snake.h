@@ -10,12 +10,14 @@
 class Snake : public Entity {
  public:
   // Constructor
-  Snake(const Grid& grid, float initialSpeed, float deltaSpeedLimit)
-      : _grid(grid),
-        // Clamp deltaSpeed during initialization
-        _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f)) 
+  Snake(
+    const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction
+  ): _direction(direction), 
+     _grid(grid),
+     // Clamp deltaSpeed during initialization
+     _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f)) 
   {
-        SetSpeed(initialSpeed);  // Clamp speed during initialization
+    SetSpeed(initialSpeed);  // Clamp speed during initialization
   } 
 
   // Copy Assignment Operator
@@ -51,6 +53,15 @@ class Snake : public Entity {
     };
   }
 
+  // Makes Game a friend class, giving it access to private members. Game is trusted to 
+  // modify this object appropriatly and responsibly.
+  friend class Game; 
+
+  // Getter for direction which is private but Game is friends with this class so it is
+  // the only Object that can set the direction of snakes.  Other snakes should not be able to 
+  // change the direction of others apart from thier own.
+  inline Direction GetDirection() const {return _direction; }
+
   int GetCellX() const override {return static_cast<int>(_head_x);}  // Return the snake's head cell's x-coordinate.
   int GetCellY() const override {return static_cast<int>(_head_y);}  // Return the snake's head cell's y-coordinate.
 
@@ -85,12 +96,7 @@ class Snake : public Entity {
   
   inline void Decelerate(float decrement) { SetSpeed(_speed - decrement); }
 
-  /* I have left _direction public for now since I am concerned about input latency.
-     I could change it later to protected with public getter and setters
-  */
-  Direction _direction; //Game should control direction initial value
   
-
  protected:
   void UpdateHead();
   virtual void UpdateBody(const SDL_Point &currentHeadCell);
@@ -106,7 +112,7 @@ class Snake : public Entity {
       _speed = std::clamp(newSpeed, 0.01F, 0.999F);
   }
 
-   
+  Direction _direction;
   int _size;            //Game should control size initial value
   bool _alive{true};
   float _head_x;

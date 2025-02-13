@@ -40,8 +40,8 @@ struct NodeCompare {
 // PlayerSnake: Snake Controlled by the User.
 class PlayerSnake : public Snake {
  public:
-    PlayerSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit) 
-        : Snake(grid, initialSpeed, deltaSpeedLimit) {    
+    PlayerSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction) 
+        : Snake(grid, initialSpeed, deltaSpeedLimit, direction) {    
     }
 
     ~PlayerSnake() override = default;
@@ -76,8 +76,8 @@ class Food : public Entity {
 */ 
 class ObstacleSnake : public Snake {
  public:
-    ObstacleSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit) 
-        : Snake(grid, initialSpeed, deltaSpeedLimit) {    
+    ObstacleSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction) 
+        : Snake(grid, initialSpeed, deltaSpeedLimit, direction) {    
     }
 
     ~ObstacleSnake() override = default;
@@ -98,10 +98,10 @@ class ObstacleSnake : public Snake {
 class  AISnake : public Snake {
  public:
    AISnake(
-      const Grid& grid, float initialSpeed, float deltaSpeedLimit,
+      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const std::vector<ObstacleSnake>& obstacles, const PlayerSnake& playerSnake,
       const Food& food
-   ): Snake(grid, initialSpeed, deltaSpeedLimit),
+   ): Snake(grid, initialSpeed, deltaSpeedLimit, direction),
       _obstacles(obstacles),                    // Read-only reference; no modifications allowed.
       _playerSnake(playerSnake),                // Read-only reference.
       _food(food),
