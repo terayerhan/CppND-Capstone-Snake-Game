@@ -496,3 +496,21 @@ void AISnake::FindPath() {
     // std::cout << "Path NOT Found" << std::endl;
 
 }
+
+
+
+void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
+    // Check if state of food or playerSnake has change. That is food may have been eaten by player or
+    // or obstacle snake or player snake may have changed direction and or eaten food. if any of these
+    // happen, there is a chance that the current path has become invalidated, hence create new path plan.
+    if(IsPlayerSnakeChanged || IsFoodChanged) {
+        FindPath();            // RE-Calcualte path plan.
+    }
+
+    // Set Direction to the last direction in the _directions vector.
+    _direction = _pathDirections.back();
+
+    // Remove the current direction from the _pathDirections vector so that the next time this method is 
+    // called, the last element will be direction the AISnake will take next.
+    _pathDirections.pop_back();
+}
