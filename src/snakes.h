@@ -114,7 +114,7 @@ class  AISnake : public Snake {
    EntityType GetType() const override { return EntityType::AISnake;}
 
    void FindPath();
-   void SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged, bool IsObstaclesChanged);
+   void SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged);
 
  private:
    const std::vector<ObstacleSnake>& _obstacles;
