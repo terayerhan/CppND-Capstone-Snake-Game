@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm> // For std::clamp
+#include <deque>
 
 #include "Entity.h"
 #include "grid.h"
@@ -43,7 +44,7 @@ class Snake : public Entity {
 
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsSnakeCell(const int x, const int y); 
-  const std::vector<SDL_Point>& GetBodyCells() const {return _body_cells;}
+  const std::deque<SDL_Point>& GetBodyCells() const {return _body_cells;}
 
   // Getter for the Snake's head cell position.
   SDL_Point GetPosition() const override {
@@ -117,7 +118,7 @@ class Snake : public Entity {
   bool _alive{true};
   float _head_x;
   float _head_y;
-  std::vector<SDL_Point> _body_cells;
+  std::deque<SDL_Point> _body_cells;
   bool _growing{false};
   int _health;          //Review the need for _health or how to implement it.
   const Grid& _grid;  
