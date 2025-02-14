@@ -3,15 +3,14 @@
 #include <iostream>
 
 void Snake::Update() {
-  SDL_Point& previousHeadCell = _body_cells.back();  // We first capture the head's cell before updating.
+  SDL_Point& previousHeadCell = _body_cells.front();  // Capture the head's cell before updating.
   UpdateHead();
   SDL_Point currentHeadCell{
       static_cast<int>(_head_x),
       static_cast<int>(_head_y)};  // Capture the head's cell after updating.
 
-  // Update all of the body vector items if the snake head has moved to a new
-  // cell.
-  if (currentHeadCell.x != previousHeadCell.x || currentHeadCell.y != previousHeadCell.y) {
+  // Update all of the body deque items if the snake head has moved to a new cell.
+  if (currentHeadCell != previousHeadCell) {
     UpdateBody(currentHeadCell);
   }
 }
@@ -42,15 +41,15 @@ void Snake::UpdateHead() {
 }
 
 void Snake::UpdateBody(const SDL_Point &currentHeadCell) {
-  // Add previous head location to vector
-  _body_cells.push_back(currentHeadCell);
+  // Add previous head location to the front of the body cells deque
+  _body_cells.push_front(currentHeadCell);
 
   if (!_growing) {
-    // Remove the tail from the vector.
-    _body_cells.erase(_body_cells.begin());
+    // Remove the tail from the back of the deque.
+    _body_cells.pop_back();
   } else {
     _growing = false;
-    _size++;
+    //_size++;
   }
   
 }
@@ -64,24 +63,20 @@ bool Snake::HasSelfCollision() {
       return false; // No self-collision: Snake is only one cell, hence it cannot collide with itself.
   }
 
-  int headX = static_cast<int>(_head_x);
-  int headY = static_cast<int>(_head_y);
+  // Get head position from front of deque
+  const SDL_Point& head = _body_cells.front();
   
-  // Use "_body_cells.end() - 1" because head cell is last element in _body_cell vector.
-  return std::any_of(_body_cells.begin(), _body_cells.end() - 1,
-      [headX, headY](const auto& cell) {
-          return cell.x == headX && cell.y == headY;
+  // Check collision with rest of body (skip head by starting at begin() + 1).
+  return std::any_of(_body_cells.begin() + 1, _body_cells.end(),
+      [&head](const SDL_Point& cell) {
+          return cell == head;
       });
 }
 
 
 // Check if cell with coordinate (x, y) is part of this Snake's body.
 bool Snake::IsSnakeCell(const int x, const int y) {
-  if(std::find_if(_body_cells.begin(), _body_cells.end(), [&x, &y](const SDL_Point& cell) {
-      return cell.x == x && cell.y == y; }) != _body_cells.end()) {
+  SDL_Point targetCell{x, y};
 
-    return true; //Cell is part of this Snake's body.
-  };
-
-  return false; // Cell is not part of this Snake's body.
+  return std::find(_body_cells.begin(), _body_cells.end(), targetCell) != _body_cells.end();
 }
