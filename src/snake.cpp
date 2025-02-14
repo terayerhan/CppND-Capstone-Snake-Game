@@ -66,11 +66,9 @@ bool Snake::HasSelfCollision() {
   // Get head position from front of deque
   const SDL_Point& head = _body_cells.front();
   
-  // Check collision with rest of body (skip head by starting at begin() + 1).
-  return std::any_of(_body_cells.begin() + 1, _body_cells.end(),
-      [&head](const SDL_Point& cell) {
-          return cell == head;
-      });
+   // Use a reverse iterator to check from the tail towards the head, stopping early if found.
+   // This is because self-collision is most likely to happen at or closer to tail than head.
+   return std::find(_body_cells.rbegin(), _body_cells.rend() - 1, head) != _body_cells.rend() - 1;
 }
 
 
