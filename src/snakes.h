@@ -145,7 +145,7 @@ class  AISnake : public Snake {
 
    std::shared_ptr<Node> AddNode( 
       std::shared_ptr<Node> current, Direction nextDirection, 
-      std::vector<SDL_Point>& currentBodyCells
+      std::deque<SDL_Point>& currentBodyCells
    );
 
    

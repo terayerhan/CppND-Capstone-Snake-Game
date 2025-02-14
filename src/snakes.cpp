@@ -123,7 +123,7 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
 
 
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
-    std::vector<SDL_Point>& currentBodyCells
+    std::deque<SDL_Point>& currentBodyCells
     ) {
     
     // Initialize the nextNode variables
@@ -175,7 +175,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         /* Since  head is moving till it reaches the next cell, check if this simulatd snake head
            has reached the next cell so that its bodycells can be updated before checking for 
            collision because when the head moves to a new cell the tail will vacat its previous 
-           position hence, this can affect the result o f the collision check. I the cells are not
+           position hence, this can affect the result o f the collision check. If the cells are not
            moved appropraitely, more optimal paths could be blocked.
         */
 
@@ -183,19 +183,15 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         if (nextHeadCell != currentCell) {
             // Snake has arrived in next cell.//
 
-            /* Tail is at the back of currentBodyCells to avoid the need to reverse it to match
-               back to front nature of the body cells vector of Snake hence, remove it first to 
-               reduce the amount of elements that will be shifted when the head is inserted at 
-               the front of currrentBody vector.
-            */
-            currentBodyCells.pop_back();
-            currentBodyCells.insert(currentBodyCells.begin(), nextHeadCell);
+            // Tail is at the back of currentBodyCells.            
+            currentBodyCells.pop_back();                 // Remove tail from back of deque.
+            currentBodyCells.push_front(nextHeadCell);   // Add head to front of deque.
 
             // Check for collision with playerSnake and self.//
 
             /* Check if nextTimeStep is a key in  the unordered_map of  _predictedPlayerBlockedCells
                (which also implies in same for _predictedObstacleBlockedCells since the max time step 
-               of prediction is same for both). If the time step is not in the unordered_map, G
+               of prediction is same for both). If the time step is not in the unordered_map, 
                Generate more predicted blocked cells for both playerSnake and obstacle snakes up to
                the heuristic of the nextCell. 
             */
@@ -330,38 +326,31 @@ void AISnake::FindPath() {
         to reconstruct the cells of the snake, create dummy Node shared_ptrs from the body cells that are not 
         the head; linking them from the tail as base parent up to the neck which will then serve as the parent 
         to the head based Node that will be placed on the openList as the start Node for the A*Search based 
-        path planning. The parent of the tail based node will be nullptr which will be the first element in
-        the closedList of Node pointer.
+        path planning. The parent of the tail based node will be nullptr.
     */
-    std::vector<std::shared_ptr<Node>> closedList{nullptr};  // vector to store the dummy node pointers.
+    std::vector<std::shared_ptr<Node>> closedList;  // vector to store the dummy node shared pointers.
     std::size_t fCost_Max = std::numeric_limits<std::size_t>::max();  // for use as fCost of all dummy nodes.
 
     // Check if size of snake's body Cells is greater than one otherwise don't create dummy node pointers.
     std::size_t snakeSize = _body_cells.size();
     if (snakeSize > 1) {
-        for (std::size_t i=0; i<snakeSize; i++) {
-            if (i > 0) {
-                // Add non-tail based dummy nodes pointers.
-                closedList.push_back(
-                    std::make_shared<Node>(
-                        _body_cells[i],     // The cell position.
-                        0,                  // gCost is 0(same as start node) for dummy nodes.
-                        fCost_Max,          // fCost is set to the maximum for dummy nodes. 
-                        0.0f, 0.0f,         // Head position (dummy values here).
-                        _direction,         // Initial Snake Direction is maintained by dummy nodes. Its irrelvant.
-                        closedList[i-1] // Previous Node(next one closer to tial Node) is the node's parent. 
-                    )
-                );
-            }
-            else {
-                // Add node pointer base on the tail cell of the snake.
-                closedList.push_back(
-                    std::make_shared<Node>(
-                        _body_cells[i], 0, fCost_Max, 0.0f, 0.0f, _direction,
-                        nullptr  // For the tail cell, the parent is nullptr.
-                    )
-                );
-            }
+        closedList.reserve(snakeSize - 1); // Preallocate memory for all non-head nodes
+
+        // Create nodes from tail to neck
+        std::shared_ptr<Node> parent = nullptr; // Tail node will have nullptr as parent
+        for (std::size_t i = snakeSize - 1; i > 0; i--) {  // Start from the back(tail) of the body (deque).
+            closedList.emplace_back(
+                std::make_shared<Node>(
+                    _body_cells[i],     // The cell position.
+                    0,                  // gCost is 0(same as start node) for dummy nodes.
+                    fCost_Max,          // fCost is set to the maximum for dummy nodes. 
+                    0.0f, 0.0f,         // Head position (dummy values here).
+                    _direction,         // Initial Snake Direction is maintained by dummy nodes. Its irrelvant.
+                    parent  
+                )
+            );
+
+            parent = closedList.back(); // Update parent for next iteration            
         }
     }
 
@@ -442,17 +431,17 @@ void AISnake::FindPath() {
            The reconstructed body is then used to check for collisions with obstacle snakes, player
            snake, and the snakes head agaist its rest of its body when exploring nodes to add to the
            open list in the up, down, left and right directions. The reconstructed body is left with 
-           the tail at the back of vector
+           the tail at the back of the deque.
 
-           The game logic detect that a player or AI snake is penelized when it collides with an 
+           The game logic dictect that a player or AI snake is penelized when it collides with an 
            obstacle snake or when the obstacle snake collides with them. For a player or ai snake 
            is only penelize if it runs into the other's body not when the other runs into its body. 
         */
-        std::vector<SDL_Point> currentBody;  // Tail is at back of vector. vector is delibrately not reversed.
+        std::deque<SDL_Point> currentBodyCells;  // Tail is at back of deque. current.cell_ is head cell. 
         std::shared_ptr<Node> nodePtr = current;
 
         for (std::size_t i=0; i<snakeSize; i++) {
-            currentBody.push_back(nodePtr->cell_);
+            currentBodyCells.push_back(nodePtr->cell_);
             nodePtr = nodePtr->parent_;
         }
 
@@ -478,7 +467,7 @@ void AISnake::FindPath() {
             }
 
             // Attempt to create a new node in the specified nextDirection
-            std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBody);
+            std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
 
             // If the node was successfully created (i.e., not null), add it to the open list.
             if (nextNodePtr != nullptr) {
