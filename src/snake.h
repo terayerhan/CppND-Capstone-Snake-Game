@@ -1,5 +1,8 @@
 #pragma once
 
+// Forward declarations
+class Game;
+
 #include <vector>
 #include <algorithm> // For std::clamp
 #include <deque>

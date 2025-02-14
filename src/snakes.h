@@ -1,8 +1,5 @@
 #pragma once
 
-// Forward declarations
-class Game;
-
 #include "snake.h"
 
 #include <unordered_set>
