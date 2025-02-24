@@ -70,18 +70,8 @@ SDL_Point Game::GetEmptyCell() {
 
 
 void Game::PlaceFood() {
-  int x, y;
-  while (true) {
-    x = random_w(engine);
-    y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
-    // food.
-    if (!snake.SnakeCell(x, y)) {
-      food.x = x;
-      food.y = y;
-      return;
-    }
-  }
+  _food._position = GetEmptyCell();
+  _food.active = true;        // Optionally, ensure food is marked active.  
 }
 
 void Game::Update() {
