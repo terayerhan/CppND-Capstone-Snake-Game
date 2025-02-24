@@ -50,6 +50,25 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 }
 
+SDL_Point Game::GetEmptyCell() {
+  SDL_Point targetCell;
+  while (true) {
+      // Get a random location
+      targetCell.x = random_w(engine);
+      targetCell.y = random_h(engine);
+
+      // Check that the location is not occupied by any snake.
+      // Only return the cell if every snake does NOT hit it.
+      if (std::all_of(_allSnakes_ptrs.begin(), _allSnakes_ptrs.end(),
+                      [&targetCell](Snake* snake) {
+                          return !snake->IsHitBy(targetCell);
+                      })) {
+          return targetCell;
+      }
+  }
+}
+
+
 void Game::PlaceFood() {
   int x, y;
   while (true) {
