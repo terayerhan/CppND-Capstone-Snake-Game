@@ -3,12 +3,54 @@
 #include "SDL.h"
 
 Game::Game(Grid& grid)
-    : //snake(grid_width, grid_height),
-      engine(dev()),
-      random_w(0, static_cast<int>(grid.GetWidth() - 1)),
-      random_h(0, static_cast<int>(grid.GetHeight() - 1)) {
+  : 
+  engine(dev()),
+  random_w(0, static_cast<int>(grid.GetWidth() - 1)),
+  random_h(0, static_cast<int>(grid.GetHeight() - 1)),
+
+  // Could use a settings_parameter to initialze entities but for now just hard-coding the parameters.
+
+  // Initialize obstacles using list-initialization.
+  _obstacles{
+    ObstacleSnake(grid, 0.03f, 0.003f, Direction::kDown, SDL_Point{10, 10}, 5),
+    ObstacleSnake(grid, 0.03f, 0.003f, Direction::kUp,   SDL_Point{20, 20}, 5),
+    ObstacleSnake(grid, 0.03f, 0.003f, Direction::kLeft, SDL_Point{30, 30}, 5)
+  },
+
+  // Initialize the player snake at the center of the grid.
+  _playerSnake(
+    grid, 0.05f, 0.005f, Direction::kUp,
+    SDL_Point{ 
+      static_cast<int>(grid.GetWidth() / 2),
+      static_cast<int>(grid.GetHeight() / 2) 
+    }
+  ),
+
+  // Default-construct Food. Its position will be set in PlaceFood().
+  _food(),
+
+  // Initialize the AI snake.
+  _aiSnake(
+    grid, 0.04f, 0.004f, Direction::kUp,
+    SDL_Point{ 
+      static_cast<int>(grid.GetWidth() / 2 + 1),  // place aiSnake one cell to the right of playerSnake
+      static_cast<int>(grid.GetHeight() / 2)
+    }, // initial head for the AI snake.
+    _obstacles, _playerSnake, _food
+  )
+{
+  // Populate the vector of snake pointers for collision checks, etc.
+  for (auto& obs : _obstacles) {
+    _allSnakes_ptrs.push_back(&obs);
+  }
+
+  _allSnakes_ptrs.push_back(&_playerSnake);
+  _allSnakes_ptrs.push_back(&_aiSnake);
+
+  // Place food in an empty cell.
   PlaceFood();
 }
+
 
 void Game::Run(Controller const &controller, Renderer &renderer,
                std::size_t target_frame_duration) {

@@ -22,6 +22,7 @@ class Game {
   std::vector<ObstacleSnake> _obstacles;
   PlayerSnake _playerSnake;
   Food _food;
+  AISnake _aiSnake;
 
   std::vector<Snake*> _allSnakes_ptrs;
 
