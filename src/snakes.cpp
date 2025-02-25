@@ -503,3 +503,40 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
     // called, the last element will be direction the AISnake will take next.
     _pathDirections.pop_back();
 }
+
+
+
+void ObstacleSnake::InitializeBody(std::size_t initialLength) {
+    // Clear any existing body cells.
+    _body_cells.clear();
+
+    // Create the head cell from the current head coordinates.
+    SDL_Point head { static_cast<int>(_head_x), static_cast<int>(_head_y) };
+    _body_cells.push_front(head);  // Head is at the front.
+
+    // Create the rest of the body.
+    // We'll place each new segment behind the head, depending on the starting direction.
+    for (std::size_t i = 1; i < initialLength; ++i) {
+        SDL_Point segment = head;
+        switch (_direction) {
+            case Direction::kUp:
+                // If moving up, the body is below the head.
+                segment.y += static_cast<int>(i);
+                break;
+            case Direction::kDown:
+                // If moving down, the body is above the head.
+                segment.y -= static_cast<int>(i);
+                break;
+            case Direction::kLeft:
+                // If moving left, the body is to the right of the head.
+                segment.x += static_cast<int>(i);
+                break;
+            case Direction::kRight:
+                // If moving right, the body is to the left of the head.
+                segment.x -= static_cast<int>(i);
+                break;
+        }
+        // Add new segments at the back so that the head remains at the front.
+        _body_cells.push_back(segment);
+    }
+}

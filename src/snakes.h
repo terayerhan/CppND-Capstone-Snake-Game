@@ -80,16 +80,17 @@ class ObstacleSnake : public Snake {
       const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const SDL_Point& head, std::size_t initialLength
    ) 
-      : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {
-         
-         
+   : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {
+
+      InitializeBody(initialLength);         
    }
 
    ~ObstacleSnake() override = default;
 
    EntityType GetType() const override { return EntityType::ObstacleSnake;}
 
- protected:
+ private:
+   void InitializeBody(std::size_t initialLength);
     
 };
 
