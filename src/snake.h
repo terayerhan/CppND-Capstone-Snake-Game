@@ -13,16 +13,24 @@ class Game;
 
 class Snake : public Entity {
  public:
-  // Constructor
+  // Constructor.
   Snake(
-    const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction
-  ): _direction(direction), 
-     _grid(grid),
-     // Clamp deltaSpeed during initialization
-     _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f)) 
+    const Grid& grid, 
+    float initialSpeed, 
+    float deltaSpeedLimit, 
+    Direction direction, 
+    const SDL_Point& head
+  )
+    : _direction(direction),
+      _head_x(static_cast<float>(head.x)),
+      _head_y(static_cast<float>(head.y)),
+      _grid(grid),
+      _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f))
   {
-    SetSpeed(initialSpeed);  // Clamp speed during initialization
-  } 
+      // Place the head cell into the body container (head is at the front)
+      _body_cells.push_front(head);
+      SetSpeed(initialSpeed);  // Clamps and sets the initial speed.
+  }
 
   // Copy Assignment Operator
   Snake& operator=(const Snake& other) {

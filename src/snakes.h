@@ -37,13 +37,16 @@ struct NodeCompare {
 // PlayerSnake: Snake Controlled by the User.
 class PlayerSnake : public Snake {
  public:
-    PlayerSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction) 
-        : Snake(grid, initialSpeed, deltaSpeedLimit, direction) {    
-    }
+   PlayerSnake(
+      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
+      const SDL_Point& head 
+   ) 
+      : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {    
+   }
 
-    ~PlayerSnake() override = default;
-        
-    EntityType GetType() const override { return EntityType::PlayerSnake;}
+   ~PlayerSnake() override = default;
+      
+   EntityType GetType() const override { return EntityType::PlayerSnake;}
  
 };
 
@@ -73,13 +76,18 @@ class Food : public Entity {
 */ 
 class ObstacleSnake : public Snake {
  public:
-    ObstacleSnake(const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction) 
-        : Snake(grid, initialSpeed, deltaSpeedLimit, direction) {    
-    }
+   ObstacleSnake(
+      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
+      const SDL_Point& head, std::size_t initialLength
+   ) 
+      : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {
+         
+         
+   }
 
-    ~ObstacleSnake() override = default;
+   ~ObstacleSnake() override = default;
 
-    EntityType GetType() const override { return EntityType::ObstacleSnake;}
+   EntityType GetType() const override { return EntityType::ObstacleSnake;}
 
  protected:
     
@@ -96,9 +104,10 @@ class  AISnake : public Snake {
  public:
    AISnake(
       const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
-      const std::vector<ObstacleSnake>& obstacles, const PlayerSnake& playerSnake,
-      const Food& food
-   ): Snake(grid, initialSpeed, deltaSpeedLimit, direction),
+      const SDL_Point& head, const std::vector<ObstacleSnake>& obstacles, 
+      const PlayerSnake& playerSnake, const Food& food
+   )
+   : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head),
       _obstacles(obstacles),                    // Read-only reference; no modifications allowed.
       _playerSnake(playerSnake),                // Read-only reference.
       _food(food),
