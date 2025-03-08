@@ -83,3 +83,37 @@ bool Snake::IsHitBelowHeadBy(const SDL_Point& offendingCell) {
 
   return std::find(std::next(_body_cells.begin()), _body_cells.end(), offendingCell) != _body_cells.end();
 }
+
+
+/**
+* @brief Calculates how far the snake's head has progressed into its current cell
+* 
+* This method determines the fractional distance that the snake's head has traveled
+* into the current grid cell it occupies. The distance is measured from the edge
+* the snake entered from, and ranges from 0.0 (just entered) to 1.0 (about to exit).
+* 
+* This is primarily used for collision detection to determine which snake reached
+* a contested cell first when multiple snakes occupy the same cell in the same frame.
+* 
+* @return float The distance (0.0 to 1.0) the head has traveled into its current cell
+*/
+float Snake::GetDistanceInHeadCell() const {
+  // Convert the floating-point head position to integers to get the cell coordinates
+  int headX = static_cast<int>(_head_x);
+  int headY = static_cast<int>(_head_y);
+
+  // Calculate the fractional distance the head has traveled into its current cell
+  switch(_direction) {
+    case Direction::kUp:
+      return headY + 1 - _head_y;  // Distance from bottom edge of cell
+
+    case Direction::kDown:
+      return _head_y - headY;      // Distance from top edge of cell
+    
+    case Direction::kLeft:
+      return headX + 1 - _head_x;  // Distance from right edge of cell
+
+    case Direction::kRight:
+      return _head_x - headX;      // Distance from left edge of cell
+  }
+}
