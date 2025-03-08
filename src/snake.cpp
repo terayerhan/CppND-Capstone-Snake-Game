@@ -76,3 +76,10 @@ bool Snake::HasSelfCollision() {
 bool Snake::IsHitBy(const SDL_Point& targetCell) {
   return std::find(_body_cells.begin(), _body_cells.end(), targetCell) != _body_cells.end();
 }
+
+// Check if snake is hit by a cell(headCell of another snake) from nake to tail.
+bool Snake::IsHitBelowHeadBy(const SDL_Point& offendingCell) {
+  if (_body_cells.size() <= 1) return false;
+
+  return std::find(std::next(_body_cells.begin()), _body_cells.end(), offendingCell) != _body_cells.end();
+}

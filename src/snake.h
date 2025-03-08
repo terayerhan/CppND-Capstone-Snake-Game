@@ -55,6 +55,7 @@ class Snake : public Entity {
 
   // checks if coordinates collide with snake's body. You may want to change the name
   bool IsHitBy(const SDL_Point& targetCell); 
+  bool IsHitBelowHeadBy(const SDL_Point& offendingCell);
   const std::deque<SDL_Point>& GetBodyCells() const {return _body_cells;}
 
   // Getter for the Snake's head cell position.
