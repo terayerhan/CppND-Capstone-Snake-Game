@@ -200,6 +200,7 @@ void Game::CheckCollisions() {
   if (snakesAtFoodCellPtrs.size() == 1) {
     // Grow the only snake that got to the food cell.
     snakesAtFoodCellPtrs.back()->Grow();
+    PlaceFood();
   }
   else if (snakesAtFoodCellPtrs.size() > 1) {
     // grow the first snake to reach the food cell.
@@ -212,6 +213,7 @@ void Game::CheckCollisions() {
     // Convert iterator to index
     std::size_t max_index = std::distance(distancesOfSnakesAtFoodCell.begin(), max_it);
     snakesAtFoodCellPtrs[max_index]->Grow(); // Grow the snake.
+    PlaceFood();
   }
 
   // Check if playerSnake's health is zero and end game if it is.
