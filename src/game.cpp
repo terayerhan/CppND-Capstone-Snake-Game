@@ -225,10 +225,7 @@ void Game::CheckCollisions() {
     growingSnake.Accelerate();
     PlaceFood();
   }
-
-  // Check if playerSnake's health is zero and end game if it is.
-  if (_playerSnake._health == 0) {_playerSnake._alive = false;}
-
+  
 }
 
 
