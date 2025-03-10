@@ -34,6 +34,7 @@ class Game {
   int score{0};
 
   SDL_Point GetEmptyCell();
+  void CheckCollisions();
 
   void PlaceFood();
   void Update();

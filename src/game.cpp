@@ -111,6 +111,98 @@ SDL_Point Game::GetEmptyCell() {
 }
 
 
+void Game::CheckCollisions() {
+  // Check self-collision of playerSnake and AISnake.
+  if (_playerSnake.HasSelfCollision()) { 
+    _playerSnake.Decelerate();
+    _playerSnake.ReduceHealth(1); 
+    //_playerSnake.Shrink(1);
+  }
+
+  if (_aiSnake.HasSelfCollision()) { 
+    _aiSnake.Decelerate();
+    //_aiSnake.Shrink();
+  }
+
+  // Get the head of playerSnake and AISnake.
+  SDL_Point playerHeadCell = _playerSnake.GetPosition();
+  SDL_Point aiSnakeHeadCell = _aiSnake.GetPosition();
+
+  // Create a vector of snake pointers to store any snake playerSnake, aiSnake or obstacleSnake
+  // collides with food cell.
+  std::vector<Snake*> snakesAtFoodCellPtrs;
+
+  // Check food collision of playerSnake and AISnake.
+  SDL_Point foodCell = _food.GetPosition(); // cash food position.
+  if (playerHeadCell == foodCell) { snakesAtFoodCellPtrs.push_back(&_playerSnake); }
+  if (aiSnakeHeadCell == foodCell) { snakesAtFoodCellPtrs.push_back(&_aiSnake); }
+
+  // Check head-to-head collision of playerSnake and aiSnake and if there isn't, chech playerSnake
+  // collision against aiSnake and aiSnake collision against playerSnake.
+  if (playerHeadCell == aiSnakeHeadCell) {
+    // Determine the snake that got to the cell last and penalize it.
+    _aiSnake.GetDistanceInHeadCell() > _playerSnake.GetDistanceInHeadCell() ? 
+      _playerSnake.ReduceHealth(1)  : _aiSnake.Decelerate();
+  }
+  else { 
+    // Check playerSnake collision against aiSnake's rest of body.
+    if ( _aiSnake.IsHitBelowHeadBy(playerHeadCell)) {
+      _playerSnake.Decelerate();
+      _playerSnake.ReduceHealth(1);
+    }
+
+    // Check aiSnake collision against playerSnake's rest of body. (may not be needed if aiSnake path planner works as intented)
+    if ( _playerSnake.IsHitBelowHeadBy(aiSnakeHeadCell)) {
+      _aiSnake.Decelerate();
+    }
+  }
+
+  // Check obstacleSnakes' collisions against playerSnake and aiSnake.
+  for (auto& obstacleSnake : _obstacles) {
+    // cash obstacleSnake's head.
+    SDL_Point obstacleSnakeHeadCell = obstacleSnake.GetPosition();
+    // Check if obstacles snake can eat the food then add it to the list of snake trying to eat the food.
+    if (obstacleSnakeHeadCell == foodCell) { snakesAtFoodCellPtrs.push_back(&obstacleSnake); }
+
+    // Check if any cell in the body of the obstacleSnake collides with a playerSnake and aiSnake.
+    for (auto& obstacleCell : obstacleSnake._body_cells) {
+      if (_playerSnake.IsHitBy(obstacleCell)) { 
+        _playerSnake.Decelerate();
+        _playerSnake.ReduceHealth(1);
+      }
+
+      if (_aiSnake.IsHitBy(obstacleCell)) {
+        _aiSnake.Decelerate();
+      }
+    }
+  }
+
+  // Grow the snake that reached the food cell first.
+  std::vector<std::size_t> distancesOfSnakesAtFoodCell; // longest distance will be the for snake that got to cell first.
+  
+  if (snakesAtFoodCellPtrs.size() == 1) {
+    // Grow the only snake that got to the food cell.
+    snakesAtFoodCellPtrs.back()->Grow();
+  }
+  else if (snakesAtFoodCellPtrs.size() > 1) {
+    // grow the first snake to reach the food cell.
+    for ( auto& snakePtr : snakesAtFoodCellPtrs) {
+      distancesOfSnakesAtFoodCell.push_back(snakePtr->GetDistanceInHeadCell());
+    }
+
+    // Find iterator to max element
+    auto max_it = std::max_element(distancesOfSnakesAtFoodCell.begin(), distancesOfSnakesAtFoodCell.end());
+    // Convert iterator to index
+    std::size_t max_index = std::distance(distancesOfSnakesAtFoodCell.begin(), max_it);
+    snakesAtFoodCellPtrs[max_index]->Grow(); // Grow the snake.
+  }
+
+  // Check if playerSnake's health is zero and end game if it is.
+  if (_playerSnake._health == 0) {_playerSnake._alive = false;}
+
+}
+
+
 void Game::PlaceFood() {
   _food._position = GetEmptyCell();
   _food.active = true;        // Optionally, ensure food is marked active.  
