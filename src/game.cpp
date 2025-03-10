@@ -194,12 +194,20 @@ void Game::CheckCollisions() {
     }
   }
 
+  // Check if playerSnake's health is zero and end game if it is.
+  if (_playerSnake._health == 0) {
+    _playerSnake._alive = false;
+    return; // if player is no longer alive, no need to continue.
+  }
+
   // Grow the snake that reached the food cell first.
   std::vector<std::size_t> distancesOfSnakesAtFoodCell; // longest distance will be the for snake that got to cell first.
 
   if (snakesAtFoodCellPtrs.size() == 1) {
     // Grow the only snake that got to the food cell.
-    snakesAtFoodCellPtrs.back()->Grow();
+    auto& growingSnake = *(snakesAtFoodCellPtrs.back());
+    growingSnake.Grow();
+    growingSnake.Accelerate();
     PlaceFood();
   }
   else if (snakesAtFoodCellPtrs.size() > 1) {
@@ -212,7 +220,9 @@ void Game::CheckCollisions() {
     auto max_it = std::max_element(distancesOfSnakesAtFoodCell.begin(), distancesOfSnakesAtFoodCell.end());
     // Convert iterator to index
     std::size_t max_index = std::distance(distancesOfSnakesAtFoodCell.begin(), max_it);
-    snakesAtFoodCellPtrs[max_index]->Grow(); // Grow the snake.
+    auto& growingSnake = *(snakesAtFoodCellPtrs[max_index]); 
+    growingSnake.Grow();
+    growingSnake.Accelerate();
     PlaceFood();
   }
 
