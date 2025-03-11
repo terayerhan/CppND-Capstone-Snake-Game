@@ -88,7 +88,7 @@ class Snake : public Entity {
   /* Collision Matrix Implications*/
   //virtual void Die();
   virtual void Grow() { _growing = true; }
-  virtual void Shrink(int amount = 1);
+  //virtual void Shrink(int amount = 1);
   virtual void ReduceHealth(int amount);
   
   ~Snake() override = default;
