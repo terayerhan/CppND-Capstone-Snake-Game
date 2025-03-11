@@ -7,8 +7,14 @@ bool Controller::ChangeDirection(PlayerSnake &playerSnake, Direction input, Dire
   Direction previousDirection = playerSnake._direction;
   if (playerSnake._direction != opposite || playerSnake.GetSize() == 1) playerSnake._direction = input;
 
-  // Check if the playerSnake's direction has changed and return the result.
-  // this will then be used to let the AISnake know that it will need to udate its path plan.
+  /* Check if the playerSnake's direction has changed and return the result.
+  
+     This is for use to let the AISnake know that the playerSnake has changed
+     its direction since unlike the playerSnake that depends on the user's 
+     eyes to detect when the AISnake or ObstacleSnakes have changed direction,
+     the AISnake uses this mechanism as its sensor and the fact that the 
+     ObstacleSnakes move in predefined directions. 
+  */
   return previousDirection != playerSnake._direction ? true : false;
 }
 
