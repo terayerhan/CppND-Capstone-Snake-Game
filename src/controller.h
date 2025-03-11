@@ -8,7 +8,7 @@ class Controller {
   void HandleInput(bool &running, PlayerSnake &playerSnake) const;
 
  private:
-  void ChangeDirection(PlayerSnake &playerSnake, Direction input, Direction opposite) const;
+  bool ChangeDirection(PlayerSnake &playerSnake, Direction input, Direction opposite) const;
 };
 
 #endif

@@ -3,9 +3,13 @@
 #include "SDL.h"
 #include "snake.h"
 
-void Controller::ChangeDirection(PlayerSnake &playerSnake, Direction input, Direction opposite) const {
+bool Controller::ChangeDirection(PlayerSnake &playerSnake, Direction input, Direction opposite) const {
+  Direction previousDirection = playerSnake._direction;
   if (playerSnake._direction != opposite || playerSnake.GetSize() == 1) playerSnake._direction = input;
-  return;
+
+  // Check if the playerSnake's direction has changed and return the result.
+  // this will then be used to let the AISnake know that it will need to udate its path plan.
+  return previousDirection != playerSnake._direction ? true : false;
 }
 
 void Controller::HandleInput(bool &running, PlayerSnake &playerSnake) const {
