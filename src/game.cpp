@@ -174,7 +174,10 @@ void Game::CheckCollisions() {
     }
   }
 
-  // Check obstacleSnakes' collisions against playerSnake and aiSnake.
+  // Check obstacleSnakes' collisions with food,  playerSnake and aiSnake and collision of playerSnake and 
+  // aiSnake with the obstacles' snakes. The game logic dictate that if a playerSnake or aiSnake comes in 
+  // contact with any obstacleSnake, they are penelized even if the contact is initiated by the obstacle
+  // snake. The obstacleSnakes are not penelized for any contact, only the AISnake and PlayerSnake.
   for (auto& obstacleSnake : _obstacles) {
     // cache obstacleSnake's head.
     SDL_Point obstacleSnakeHeadCell = obstacleSnake.GetPosition();
