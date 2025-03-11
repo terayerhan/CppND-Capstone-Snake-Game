@@ -57,6 +57,7 @@ class Snake : public Entity {
   bool IsHitBelowHeadBy(const SDL_Point& offendingCell);
   float GetDistanceInHeadCell() const;
   const std::deque<SDL_Point>& GetBodyCells() const {return _body_cells;}
+  inline std::size_t GetSize() const { return _body_cells.size(); }
 
   // Getter for the Snake's head cell position.
   SDL_Point GetPosition() const override {
