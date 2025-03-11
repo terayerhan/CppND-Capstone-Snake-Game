@@ -51,68 +51,45 @@ void Renderer::Render(
   SDL_SetRenderDrawColor(sdl_renderer, 0x1E, 0x1E, 0x1E, 0xFF);
   SDL_RenderClear(sdl_renderer);
 
-  // Render food
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xCC, 0x00, 0xFF);
-  SDL_Point foodPosition = food.GetPosition(); // cache food position.
-  block.x = foodPosition.x * block.w;
-  block.y = foodPosition.y * block.h;
-  SDL_RenderFillRect(sdl_renderer, &block);
-
-  // Render playerSnake
-  // Render playerSnake's body
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-  for (SDL_Point const &point : playerSnake.GetBodyCells()) {
-    block.x = point.x * block.w;
-    block.y = point.y * block.h;
+  // Helper function to render a single cell at a position
+  auto renderCell = [this, &block](const SDL_Point& position, Uint8 r, Uint8 g, Uint8 b) {
+    block.x = position.x * block.w;
+    block.y = position.y * block.h;
+    SDL_SetRenderDrawColor(sdl_renderer, r, g, b, 0xFF);
     SDL_RenderFillRect(sdl_renderer, &block);
-  }
+  };
 
-  // Render playerSnake's head
-  SDL_Point const & playerSnakeHead = playerSnake.GetPosition();
-  block.x = playerSnakeHead.x * block.w;
-  block.y = playerSnakeHead.y * block.h;
-  if (playerSnake.IsActive()) {
-    SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xCC, 0xFF);
-  } else {
-    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
-  }
-  SDL_RenderFillRect(sdl_renderer, &block);
-
-
-  // Render AISnake
-  // Render AISnake's body
-  SDL_SetRenderDrawColor(sdl_renderer, 0xEE, 0xEE, 0xEE, 0xFF);
-  for (SDL_Point const &point : aiSnake.GetBodyCells()) {
-    block.x = point.x * block.w;
-    block.y = point.y * block.h;
-    SDL_RenderFillRect(sdl_renderer, &block);
-  }
-
-  // Render AISnake's head
-  SDL_Point const & aiSnakeHead = aiSnake.GetPosition();
-  block.x = aiSnakeHead.x * block.w;
-  block.y = aiSnakeHead.y * block.h;
-  SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xBB, 0xFF);
-  SDL_RenderFillRect(sdl_renderer, &block);
-
-
-  // Render ObstacleSnakes
-  for(ObstacleSnake const &obstacle : obstacles) {
-    // Render ObstacleSnake
-    // Render ObstacleSnake's body
-    SDL_SetRenderDrawColor(sdl_renderer, 0xCC, 0xCC, 0xCC, 0xFF);
-    for (SDL_Point const &point : obstacle.GetBodyCells()) {
+  // Helper function to render any snake's body
+  auto renderSnakeBody = [this, &block](const auto& snake, Uint8 r, Uint8 g, Uint8 b) {
+    SDL_SetRenderDrawColor(sdl_renderer, r, g, b, 0xFF);
+    for (SDL_Point const &point : snake.GetBodyCells()) {
       block.x = point.x * block.w;
       block.y = point.y * block.h;
       SDL_RenderFillRect(sdl_renderer, &block);
     }
+  };
 
-    // Render ObstacleSnake's head
-    SDL_Point const & obstacleHead = obstacle.GetPosition();
-    block.x = obstacleHead.x * block.w;
-    block.y = obstacleHead.y * block.h;
-    SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xAA, 0xFF);
-    SDL_RenderFillRect(sdl_renderer, &block);
+  // Render food
+  renderCell(food.GetPosition(), 0xFF, 0xCC, 0x00);
+
+  // Render playerSnake's body
+  renderSnakeBody(playerSnake, 0xFF, 0xFF, 0xFF);
+
+  // Render playerSnake's head with conditional coloring
+  if (playerSnake.IsActive()) {
+    renderCell(playerSnake.GetPosition(), 0x00, 0x7A, 0xCC);
+  } else {
+    renderCell(playerSnake.GetPosition(), 0xFF, 0x00, 0x00);
+  }
+
+  // Render AISnake
+  renderSnakeBody(aiSnake, 0xEE, 0xEE, 0xEE);
+  renderCell(aiSnake.GetPosition(), 0x00, 0x7A, 0xBB);
+
+  // Render ObstacleSnakes
+  for(ObstacleSnake const &obstacle : obstacles) {
+    renderSnakeBody(obstacle, 0xCC, 0xCC, 0xCC);
+    renderCell(obstacle.GetPosition(), 0x00, 0x7A, 0xAA);
   }
 
   // Update Screen
