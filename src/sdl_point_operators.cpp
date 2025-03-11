@@ -1,3 +1,3 @@
 #include "sdl_point_operators.h"
 
-int SDLPointHash::grid_width = 0;  // Definition
+std::size_t SDLPointHash::grid_width = 0;  // Definition
