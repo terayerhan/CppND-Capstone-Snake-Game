@@ -2,6 +2,7 @@
 
 // Forward declarations
 class Game;
+class Controller;
 
 #include <vector>
 #include <algorithm> // For std::clamp
@@ -70,6 +71,7 @@ class Snake : public Entity {
   // Makes Game a friend class, giving it access to private members. Game is trusted to 
   // modify this object appropriatly and responsibly.
   friend class Game; 
+  friend class Controller;
 
   // Getter for direction which is private but Game is friends with this class so it is
   // the only Object that can set the direction of snakes.  Other snakes should not be able to 
