@@ -44,7 +44,6 @@ class Snake : public Entity {
       _health = other._health;
       _speed = other._speed;
       _direction = other._direction;
-      _size = other._size;
       _alive = other._alive;      
     }
     return *this;
@@ -127,7 +126,6 @@ class Snake : public Entity {
   }
 
   Direction _direction;
-  int _size;            //Game should control size initial value
   bool _alive{true};
   float _head_x;
   float _head_y;
