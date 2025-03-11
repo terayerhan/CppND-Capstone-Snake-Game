@@ -198,7 +198,7 @@ void Game::CheckCollisions() {
   }
 
   // Check if playerSnake's health is zero and end game if it is.
-  if (_playerSnake._health == 0) {
+  if (_playerSnake._health < 1) {
     _playerSnake._alive = false;
     return; // if player is no longer alive, no need to continue.
   }
