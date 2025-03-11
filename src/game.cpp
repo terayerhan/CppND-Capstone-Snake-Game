@@ -251,5 +251,5 @@ void Game::Update() {
   
 }
 
-int Game::GetScore() const { return score; }
-int Game::GetSize() const { return snake.size; }
+int Game::GetScore() const { return GetSize() - 1; }
+int Game::GetSize() const { return _playerSnake.GetBodyCells().size(); }
