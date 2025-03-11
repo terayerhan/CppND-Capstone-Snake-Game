@@ -89,7 +89,7 @@ class Snake : public Entity {
   //virtual void Die();
   virtual void Grow() { _growing = true; }
   //virtual void Shrink(int amount = 1);
-  virtual void ReduceHealth(int amount);
+  virtual void ReduceHealth(int amount) { _health - amount; };
   
   ~Snake() override = default;
 
