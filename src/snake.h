@@ -86,7 +86,7 @@ class Snake : public Entity {
   int GetHealth() const {return _health;}
 
   /* Collision Matrix Implications*/
-  virtual void Die();
+  //virtual void Die();
   virtual void Grow() { _growing = true; }
   virtual void Shrink(int amount = 1);
   virtual void ReduceHealth(int amount);
