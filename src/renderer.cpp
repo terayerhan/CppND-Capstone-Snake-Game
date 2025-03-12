@@ -88,8 +88,8 @@ void Renderer::Render(
 
   // Render ObstacleSnakes
   for(ObstacleSnake const &obstacle : obstacles) {
-    renderSnakeBody(obstacle, 0xCC, 0xCC, 0xCC);
-    renderCell(obstacle.GetPosition(), 0x00, 0x7A, 0xAA);
+    renderSnakeBody(obstacle, 0xFF, 0x88, 0x88);  // Light red/pink body
+    renderCell(obstacle.GetPosition(), 0xCC, 0x00, 0x00);  // Dark red head
   }
 
   // Update Screen
