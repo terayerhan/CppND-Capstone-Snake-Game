@@ -96,7 +96,7 @@ class Snake : public Entity {
     _health++; // Increase health by 1 each time snake grows since for now health == size of snake. 
   }
   //virtual void Shrink(int amount = 1);
-  virtual void ReduceHealth(int amount) { _health - amount; };
+  virtual void ReduceHealth(int amount) { _health =- amount; };
   
   ~Snake() override = default;
 
