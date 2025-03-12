@@ -83,8 +83,8 @@ void Renderer::Render(
   }
 
   // Render AISnake
-  renderSnakeBody(aiSnake, 0xEE, 0xEE, 0xEE);
-  renderCell(aiSnake.GetPosition(), 0x00, 0x7A, 0xBB);
+  renderSnakeBody(aiSnake, 0x00, 0xCC, 0x00);  // green body
+  renderCell(aiSnake.GetPosition(), 0x00, 0x88, 0x00);  // darker green head
 
   // Render ObstacleSnakes
   for(ObstacleSnake const &obstacle : obstacles) {
