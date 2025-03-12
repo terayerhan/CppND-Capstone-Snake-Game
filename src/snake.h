@@ -30,6 +30,7 @@ class Snake : public Entity {
   {
       // Place the head cell into the body container (head is at the front)
       _body_cells.push_front(head);
+      _health = _body_cells.size();  // For now snake healt == size of snake.
       SetSpeed(initialSpeed);  // Clamps and sets the initial speed.
   }
 
@@ -90,7 +91,10 @@ class Snake : public Entity {
 
   /* Collision Matrix Implications*/
   //virtual void Die();
-  virtual void Grow() { _growing = true; }
+  virtual void Grow() { 
+    _growing = true;
+    _health++; // Increase health by 1 each time snake grows since for now health == size of snake. 
+  }
   //virtual void Shrink(int amount = 1);
   virtual void ReduceHealth(int amount) { _health - amount; };
   
