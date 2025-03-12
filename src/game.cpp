@@ -238,16 +238,16 @@ void Game::PlaceFood() {
 }
 
 void Game::Update() {
+  // Check if playerSnake is alive.
+  if (!_playerSnake._alive) return;  // AKA GAME OVER : For now all snakes just stop moving.
+
   // Update snakes.
   for(Snake* snakePtr : _allSnakes_ptrs) {
     snakePtr->Update();
   }
 
   // Check snakes collisions.
-  CheckCollisions();
-
-  // Check if playerSnake is alive.
-  if (!_playerSnake._alive) return;
+  CheckCollisions(); 
   
 }
 
