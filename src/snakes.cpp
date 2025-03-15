@@ -382,7 +382,7 @@ void AISnake::FindPath() {
             _head_x,
             _head_y,
             _direction,
-            closedList[snakeSize-1]  // The neck (or last dummy node) becomes the parent of the head node.
+            closedList.empty() ? nullptr : closedList.back()  // The neck (or last dummy node) becomes the parent of the head node.
         )
     );
 
