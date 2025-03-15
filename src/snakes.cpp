@@ -376,7 +376,7 @@ void AISnake::FindPath() {
     // The start node is based on the snake's head and uses the last dummy node from the body as its parent.
     openList.push(
         std::make_shared<Node>(
-            _body_cells.back(), 
+            _body_cells.front(), 
             0,                           // Inititial time step from when new path needs to be recalculated.
             initialMaxTimeSteps,
             _head_x,
