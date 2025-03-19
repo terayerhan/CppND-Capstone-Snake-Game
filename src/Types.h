@@ -17,7 +17,7 @@ enum class Direction { kUp, kDown, kLeft, kRight };
  * @param d The input direction.
  * @return Direction The direction opposite to d.
  */
-Direction OppositeDirection(Direction d) {
+inline Direction OppositeDirection(Direction d) {
     switch(d) {
         case Direction::kUp:    return Direction::kDown;
         case Direction::kDown:  return Direction::kUp;
