@@ -32,6 +32,7 @@ class Game {
   std::uniform_int_distribution<int> random_h;
 
   int score{0};
+  SDL_Point _previouFoodPosition = _food._position; // For detecting when food has been replaced.
 
   SDL_Point GetEmptyCell();
   void CheckCollisions();

@@ -65,8 +65,26 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     frame_start = SDL_GetTicks();
 
     // Input, Update, Render - the main game loop.
-    controller.HandleInput(running, _playerSnake);
-    _aiSnake.FindPath();
+    /* Handle get user direction input and detect if player snake has changed direction. 
+       The detection of playerSnake direction change and food position change serve as sensor
+       outputs for the AISnake just like the playerSnake uses the User's eyes to detect all these 
+       changes for deciding how to navigate the grid. 
+    */
+    bool IsPlayerSnakeDirChanged = controller.HandleInput(running, _playerSnake);
+
+    // Check if previous food position has changed to conditionally update AISnake path.
+    bool IsFoodPositionChanged = _previouFoodPosition != _food._position;
+
+    if (IsFoodPositionChanged) {
+      _aiSnake.SetDirection(IsPlayerSnakeDirChanged, IsFoodPositionChanged);
+      _previouFoodPosition = _food._position; // Update _previousFoodPosition after detection of change.
+    }
+    else {
+      // Set aiSnake's direction base on food position not changed and whether playerSnake position 
+      // has changed
+      _aiSnake.SetDirection(IsPlayerSnakeDirChanged, IsFoodPositionChanged);
+    }
+    
     Update();
     renderer.Render(_obstacles, _playerSnake, _aiSnake, _food);
 
