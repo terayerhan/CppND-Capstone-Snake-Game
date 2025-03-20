@@ -18,29 +18,33 @@ bool Controller::ChangeDirection(PlayerSnake &playerSnake, Direction input, Dire
   return previousDirection != playerSnake._direction ? true : false;
 }
 
-void Controller::HandleInput(bool &running, PlayerSnake &playerSnake) const {
+bool Controller::HandleInput(bool &running, PlayerSnake &playerSnake) const {
   SDL_Event e;
+  bool directionChanged = false;
+  
   while (SDL_PollEvent(&e)) {
     if (e.type == SDL_QUIT) {
       running = false;
     } else if (e.type == SDL_KEYDOWN) {
       switch (e.key.keysym.sym) {
         case SDLK_UP:
-          ChangeDirection(playerSnake, Direction::kUp, Direction::kDown);
+          directionChanged = ChangeDirection(playerSnake, Direction::kUp, Direction::kDown);
           break;
 
         case SDLK_DOWN:
-          ChangeDirection(playerSnake, Direction::kDown, Direction::kUp);
+          directionChanged = ChangeDirection(playerSnake, Direction::kDown, Direction::kUp);
           break;
 
         case SDLK_LEFT:
-          ChangeDirection(playerSnake, Direction::kLeft, Direction::kRight);
+          directionChanged = ChangeDirection(playerSnake, Direction::kLeft, Direction::kRight);
           break;
 
         case SDLK_RIGHT:
-          ChangeDirection(playerSnake, Direction::kRight, Direction::kLeft);
+          directionChanged = ChangeDirection(playerSnake, Direction::kRight, Direction::kLeft);
           break;
       }
     }
   }
+  
+  return directionChanged;
 }

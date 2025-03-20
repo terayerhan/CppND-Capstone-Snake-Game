@@ -5,7 +5,7 @@
 
 class Controller {
  public:
-  void HandleInput(bool &running, PlayerSnake &playerSnake) const;
+  bool HandleInput(bool &running, PlayerSnake &playerSnake) const;
 
  private:
   bool ChangeDirection(PlayerSnake &playerSnake, Direction input, Direction opposite) const;
