@@ -14,7 +14,7 @@ Game::Game(Grid& grid)
   _obstacles{
     ObstacleSnake(grid, 0.03f, 0.003f, Direction::kDown, SDL_Point{10, 10}, 5),
     ObstacleSnake(grid, 0.03f, 0.003f, Direction::kUp,   SDL_Point{20, 20}, 5),
-    ObstacleSnake(grid, 0.03f, 0.003f, Direction::kLeft, SDL_Point{30, 30}, 5)
+    //ObstacleSnake(grid, 0.03f, 0.003f, Direction::kLeft, SDL_Point{30, 30}, 5)
   },
 
   // Initialize the player snake at the center of the grid.
