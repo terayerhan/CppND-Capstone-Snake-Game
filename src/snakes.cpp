@@ -243,16 +243,19 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
         // Since head will still be in the current cell, only check collision with Obstacles.
         if (_predictedObstaclesBlockedCells.count(nextTimeStep)) {
-                /* nextTimeStep exist in the blockedCells unordered_maps, check if any ObstacleSnakes will
-                   collide with this snake or if this snake will collide with any obstacleSnake.
+
+            /* nextTimeStep exist in the blockedCells unordered_maps, check if any ObstacleSnakes will
+                collide with this snake or if this snake will collide with any obstacleSnake.
+            */
+           for (const SDL_Point& cell : currentBodyCells) {
+            if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) {
+                /* Taking this direction from the current node will result in a collision with an 
+                    ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
+                    to indicate this. 
                 */
-                if (_predictedObstaclesBlockedCells[nextTimeStep].count(nextHeadCell) ) {
-                    /* Taking this direction from the current node will result in a collision with an 
-                       ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
-                       to indicate this. 
-                    */
-                    return nullptr;
-                }
+                return nullptr;
+            }
+           }            
         }
         else {
             /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
@@ -276,7 +279,9 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 ObstacleSnakes will collide with this snake or if this snake will collide with any 
                 obstacleSnake.
             */
-            if (_predictedObstaclesBlockedCells[nextTimeStep].count(nextHeadCell)) { return nullptr; }
+           for (const SDL_Point& cell : currentBodyCells) {
+            if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) { return nullptr; }
+           }  
         }
     } // End of while loop moving snake and checking collisions.
 
