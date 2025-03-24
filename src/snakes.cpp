@@ -123,7 +123,7 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
 
 
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
-    std::deque<SDL_Point>& currentBodyCells
+    std::deque<SDL_Point> currentBodyCells
     ) {
     
     // Initialize the nextNode variables
