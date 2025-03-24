@@ -462,9 +462,9 @@ void AISnake::FindPath() {
             // If the snake is longer than one segment, check if the next direction is
             // the opposite of the current node's direction (i.e., the direction towards the snake's neck).
             // This check prevents the snake from reversing onto itself.
-            if (snakeSize > 1 && nextDirection == OppositeDirection(current->direction_)) { 
+            /* if (snakeSize > 1 && nextDirection == OppositeDirection(current->direction_)) { 
                 continue; // Skip the reverse direction.
-            }
+            } */
 
             // Attempt to create a new node in the specified nextDirection
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
