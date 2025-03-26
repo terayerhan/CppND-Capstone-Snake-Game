@@ -1,6 +1,7 @@
 #include "snakes.h"
 
 #include <queue>
+#include <iostream>
 
 /**
  * @brief Calculates the heuristic (Manhattan distance in steps) from the snake's head to a goal cell,
@@ -235,6 +236,13 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                     std::find(currentBodyCells.begin() + 1, currentBodyCells.end(), nextHeadCell)
                       != currentBodyCells.end()
                     ) {
+                        if (std::find(
+                            currentBodyCells.begin() + 1, currentBodyCells.end(), nextHeadCell)
+                            != currentBodyCells.end()) {
+                                std::cout << "Predicted Self_Collision After adding TimeSteps"<< std::endl;
+                                return nullptr;
+                        }
+                        
                     return nullptr;
                 }
             }
@@ -324,6 +332,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
  * of 1.99999 is in cell 1, while a coordinate of 2.0000 is in cell 2.
  */
 void AISnake::FindPath() {
+    std::cout << "Started FindPath()"<< std::endl;
     // Priority queue for open set.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
 
@@ -422,7 +431,7 @@ void AISnake::FindPath() {
 
                 nodePtr = parentPtr;   // Move to the parent node to continue backtracking.
             }
-
+            std::cout << "Path Found -- End FindPath()"<< std::endl;
             return;  // Path found, exit the function.
 
         } 
