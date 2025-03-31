@@ -106,6 +106,18 @@ void AISnake::PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t
 
 
 void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
+    // Add a buffer amount of timeSteps to allow the snake's body to pass in front of an obstacle snake after 
+    // it eats the food. This is because if obstacleSnake blocked cells are only predicted up to the time the
+    // head of the aiSnake reaches the food, the aiSnake will not accont the collision of the obstacles with its
+    // body after it reaches the food.
+    /* The buffer amount of timeSteps to add to the maxTimeStep for ObstacleBlockedCells prediction is 
+       1 + the current size of the snake because the snake will increase in size by one when it eats the food
+       divde by the speed the snake will have after it eats the food because when the snake eats the food, the 
+       amount of timeSteps it will take for the body to clear the head of the obstacle snake will be dependent on
+       the current speed plus the increase in speed after eating food which is constant(_delta_speed) for each snake.        
+    */
+    //maxTimeStep += (_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
+    
     // Predict obstacle Snakes blocked cells
     for(ObstacleSnake& obstacle : _predictedObstacles) {
         // [potential loops for concurrency]
@@ -144,6 +156,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
     // While still in the current nodes's cell, keep stepping forward till you reach the next cell.
     while(nextHeadCell == currentCell) {
         // Move one step in the nextDirection.
+       /*  std::cout<< "Simulating AISnake movement"<< 
+        "  nextHeadCell:"<< nextHeadCell.x << "  " << nextHeadCell.y <<
+        "  currentCell:"<< currentCell.x << "  " << currentCell.y <<
+        "  Speed" << speed  
+        <<std::endl; */
         switch (nextDirection) {
             case Direction::kUp:
                 nextHeadY -= speed;
@@ -400,6 +417,8 @@ void AISnake::FindPath() {
         )
     );
 
+    bool notFirstIteration = false;
+
     // Begin A* search: process nodes until the open list is empty.
     while (!openList.empty()) {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
@@ -476,21 +495,44 @@ void AISnake::FindPath() {
             // If the snake is longer than one segment, check if the next direction is
             // the opposite of the current node's direction (i.e., the direction towards the snake's neck).
             // This check prevents the snake from reversing onto itself.
-            /* if (snakeSize > 1 && nextDirection == OppositeDirection(current->direction_)) { 
+            if (
+                (snakeSize > 1 && nextDirection == OppositeDirection(current->direction_)) || 
+                (notFirstIteration && nextDirection == OppositeDirection(current->direction_)) ) { 
                 continue; // Skip the reverse direction.
-            } */
+            }
 
             // Attempt to create a new node in the specified nextDirection
+            std::cout<< "AddNode() started"<<"  "<< "  CurrentCell: "<< "  " <<
+            current->cell_.x << "  "<< current->cell_.y << 
+            "  gCost: " << current->gCost_ <<
+            "  fCost: " << current->fCost_ <<
+            "  Goal: " << goal.x << " " << goal.y<< 
+            "  head: " << current->headX_ << "  "<< current->headY_ <<
+            "  Speed: "<< GetSpeed() 
+            //"  parentCell: " << current->parent_ != nullptr ? current->parent_->cell_.x :   << "  " <<current->parent_->cell_.y
+            <<  "   NextDirection: "<< static_cast<int>(nextDirection)<< std::endl;
+            std::cout << "  currentDirection: "<< static_cast<int>(current->direction_)<<
+            "  oppositeDir: " << static_cast<int>(OppositeDirection(current->direction_)) << std::endl;
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
+            
 
             // If the node was successfully created (i.e., not null), add it to the open list.
             if (nextNodePtr != nullptr) {
+                std::cout<< "AddNode() End    NextCell: "<< nextNodePtr->cell_.x<< "  " << nextNodePtr->cell_.y <<
+                "  gCost: " << nextNodePtr->gCost_ << "  fCost: " << nextNodePtr->fCost_ <<
+                "  head: " << nextNodePtr->headX_ << "  "<< nextNodePtr->headY_ 
+                << std::endl;
                 // If the node is valid, push its pointer onto the open list (a priority queue).
                 // The open list is used in pathfinding algorithms (e.g., A*) to store nodes that 
                 // are pending exploration.
                 openList.push(nextNodePtr); // Enqueue the node for further processing.
-            } 
+            }
+            else{
+                std::cout<< "AddNode() End    NextCell:  InVAlid  "<< std::endl;
+            }
         }
+
+        notFirstIteration = true;
 
     } 
 
