@@ -116,7 +116,7 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
        amount of timeSteps it will take for the body to clear the head of the obstacle snake will be dependent on
        the current speed plus the increase in speed after eating food which is constant(_delta_speed) for each snake.        
     */
-    //maxTimeStep += (_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
+    maxTimeStep += (_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
     
     // Predict obstacle Snakes blocked cells
     for(ObstacleSnake& obstacle : _predictedObstacles) {
@@ -149,7 +149,9 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
     /* Initialize the next node's time step from the current node's gCost. gCost the number of (time)steps 
        it will take the head of a snake to reach a position (float) not just the Cell position. 
     */
-    size_t nextTimeStep = current->gCost_;   
+    size_t nextTimeStep = current->gCost_;  
+    
+    SDL_Point goal = _food.GetPosition();     // Cach food position.
 
     float speed = GetSpeed();  // Use the Snake's speed to determine the distance traveled by snake per step.
 
@@ -201,9 +203,20 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         if (nextHeadCell != currentCell) {
             // Snake has arrived in next cell.//
 
-            // Tail is at the back of currentBodyCells.            
-            currentBodyCells.pop_back();                 // Remove tail from back of deque.
+            if ( nextHeadCell != goal) {
+                // Tail is at the back of currentBodyCells.            
+                currentBodyCells.pop_back();                 // Remove tail from back of deque.
+            }
+
             currentBodyCells.push_front(nextHeadCell);   // Add head to front of deque.
+
+            if (std::find(
+                currentBodyCells.begin() + 1, currentBodyCells.end(), nextHeadCell)
+                != currentBodyCells.end()
+            ) {
+                    std::cout << "Predicted Self_Collision before Checking with player "<< std::endl;
+                    return nullptr;
+            }
 
             // Check for collision with playerSnake and self.//
 
@@ -266,48 +279,121 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
         }  // End checking if snake will reach next cell.
 
-        // Since head will still be in the current cell, only check collision with Obstacles.
-        if (_predictedObstaclesBlockedCells.count(nextTimeStep)) {
 
-            /* nextTimeStep exist in the blockedCells unordered_maps, check if any ObstacleSnakes will
-                collide with this snake or if this snake will collide with any obstacleSnake.
-            */
-           for (const SDL_Point& cell : currentBodyCells) {
-            if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) {
-                /* Taking this direction from the current node will result in a collision with an 
-                    ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
-                    to indicate this. 
-                */
-                return nullptr;
+        if (nextHeadCell != goal || currentBodyCells.size() == 1) {
+            for (const SDL_Point& cell : currentBodyCells) {
+                if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) {
+                    /* Taking this direction from the current node will result in a collision with an 
+                        ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
+                        to indicate this. 
+                    */
+                    return nullptr;
+                }
+            }  
+        }
+        else { 
+            // Checdk nextTimeStep and future timeSteps that it will take for the tail cell to reach the food.
+            std::size_t tailToGoalTime = (_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
+
+            // Copy nextHeadCell values to simulate it moving forward after reaching goal.
+            SDL_Point currentSimHeadCell = nextHeadCell;  
+            SDL_Point previouSimHeadCell = currentSimHeadCell;
+
+            float currentSimHeadX = nextHeadX;
+            float currentSimHeadY = nextHeadY;
+
+            float nextSpeed = speed + GetDeltaSpeed();  // The snake's speed will increase after eating food.
+
+            for ( std::size_t i = nextTimeStep; i < nextTimeStep + tailToGoalTime; i++ )  {
+                // Move simulated aiSnake's head one step in nextDirction.
+                switch (nextDirection) {
+                    case Direction::kUp:
+                        currentSimHeadY -= nextSpeed;
+                        break;
+        
+                    case Direction::kDown:
+                        currentSimHeadY += nextSpeed;
+                        break;
+        
+                    case Direction::kLeft:
+                        currentSimHeadX -= nextSpeed;
+                        break;
+        
+                    case Direction::kRight:
+                        currentSimHeadX += nextSpeed;
+                        break;
+                }
+        
+                // Wrap the Snake around to the beginning if going off of the screen.  
+                std::pair<float, float> head_xy = _grid.WrapPosition(currentSimHeadX, currentSimHeadY);
+                currentSimHeadX = head_xy.first;
+                currentSimHeadY = head_xy.second;
+        
+                currentSimHeadCell.x = static_cast<int>(currentSimHeadX);
+                currentSimHeadCell.y = static_cast<int>(currentSimHeadY);
+
+                if (previouSimHeadCell !=  currentSimHeadCell) {
+                    previouSimHeadCell = currentSimHeadCell;
+
+                    // Update the currentBodyCells so collision check will be done on cells from the snake's cell
+                    // currently at goal cell to current tail cell position.
+                    currentBodyCells.pop_front();   // Remove the head since it will move past goal cell by now.
+                    currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
+                }
+
+                // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
+                for (const SDL_Point& cell : currentBodyCells) {
+                    std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl;
+
+                    if (_predictedObstaclesBlockedCells[i].count(cell) ) { return nullptr; }
+                } 
             }
-           }            
-        }
-        else {
-            /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
-            PredictObstacleBlockedCells(
-                nextTimeStep,
-                CalculateHeuristic(
-                    nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
-                    _grid.GetWidth(), _grid.GetHeight()
-                )
-            );
 
-            PredictPlayerBlockedCells(
-                nextTimeStep,
-                CalculateHeuristic(
-                    nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
-                    _grid.GetWidth(), _grid.GetHeight()
-                )
-            );
-
-            /* nextTimeStep Should Now exist in the blockedCells unordered_maps, check if any 
-                ObstacleSnakes will collide with this snake or if this snake will collide with any 
-                obstacleSnake.
-            */
-           for (const SDL_Point& cell : currentBodyCells) {
-            if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) { return nullptr; }
-           }  
         }
+
+        
+        // // Since head will still be in the current cell, only check collision with Obstacles.
+        // if (_predictedObstaclesBlockedCells.count(nextTimeStep)) {
+
+        //     /* nextTimeStep exist in the blockedCells unordered_maps, check if any ObstacleSnakes will
+        //         collide with this snake or if this snake will collide with any obstacleSnake.
+        //     */
+        //    for (const SDL_Point& cell : currentBodyCells) {
+        //     if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) {
+        //         /* Taking this direction from the current node will result in a collision with an 
+        //             ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
+        //             to indicate this. 
+        //         */
+        //         return nullptr;
+        //     }
+        //    }            
+        // }
+        // else {
+        //     /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
+        //     PredictObstacleBlockedCells(
+        //         nextTimeStep,
+        //         CalculateHeuristic(
+        //             nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
+        //             _grid.GetWidth(), _grid.GetHeight()
+        //         )
+        //     );
+
+        //     PredictPlayerBlockedCells(
+        //         nextTimeStep,
+        //         CalculateHeuristic(
+        //             nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
+        //             _grid.GetWidth(), _grid.GetHeight()
+        //         )
+        //     );
+
+        //     /* nextTimeStep Should Now exist in the blockedCells unordered_maps, check if any 
+        //         ObstacleSnakes will collide with this snake or if this snake will collide with any 
+        //         obstacleSnake.
+        //     */
+        //    for (const SDL_Point& cell : currentBodyCells) {
+        //     if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) { return nullptr; }
+        //    }  
+        // }
     } // End of while loop moving snake and checking collisions.
 
     /* Snake will arrive in next cell with no collision againt or by ObstacleSnake and no collision with
