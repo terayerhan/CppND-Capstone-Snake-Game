@@ -280,7 +280,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         }  // End checking if snake will reach next cell.
 
 
-        if (nextHeadCell != goal || currentBodyCells.size() == 1) {
+        if (nextHeadCell != goal || currentBodyCells.size() < 3) {
             for (const SDL_Point& cell : currentBodyCells) {
                 if (_predictedObstaclesBlockedCells[nextTimeStep].count(cell) ) {
                     /* Taking this direction from the current node will result in a collision with an 
@@ -304,8 +304,14 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
             float nextSpeed = speed + GetDeltaSpeed();  // The snake's speed will increase after eating food.
 
+            std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
+            "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
+            "  nextSpeed: " << nextSpeed
+            <<"  tailToGoalTime:   " << tailToGoalTime << std::endl;
+
             for ( std::size_t i = nextTimeStep; i < nextTimeStep + tailToGoalTime; i++ )  {
                 // Move simulated aiSnake's head one step in nextDirction.
+                std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
                 switch (nextDirection) {
                     case Direction::kUp:
                         currentSimHeadY -= nextSpeed;
@@ -339,6 +345,9 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                     // currently at goal cell to current tail cell position.
                     currentBodyCells.pop_front();   // Remove the head since it will move past goal cell by now.
                     currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
+                    std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
+                    currentBodyCells.size()
+                    << std::endl;
                 }
 
                 // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
@@ -472,6 +481,9 @@ void AISnake::FindPath() {
     }
 
     SDL_Point goal = _food.GetPosition(); // Cach the food location as goal cell.
+
+    float speed = GetSpeed();
+    std::cout << "Speed before caclulating initial time steps" << speed << std::endl;
 
     // Get the initial number of steps it will take to get to the goal if there were no blocked cells.
     std::size_t initialMaxTimeSteps = CalculateHeuristic(
