@@ -44,13 +44,10 @@ void Snake::UpdateBody(const SDL_Point &currentHeadCell) {
   // Add previous head location to the front of the body cells deque
   _body_cells.push_front(currentHeadCell);
 
-  if (!_growing) {
+  if (currentHeadCell != _food.GetPosition()) {
     // Remove the tail from the back of the deque.
     _body_cells.pop_back();
-  } else {
-    _growing = false;
-    //_size++;
-  }
+  }  
   
 }
 
