@@ -245,9 +245,24 @@ void Game::CheckCollisions() {
     auto max_it = std::max_element(distancesOfSnakesAtFoodCell.begin(), distancesOfSnakesAtFoodCell.end());
     // Convert iterator to index
     std::size_t max_index = std::distance(distancesOfSnakesAtFoodCell.begin(), max_it);
-    auto& growingSnake = *(snakesAtFoodCellPtrs[max_index]); 
-    growingSnake.Grow();
-    growingSnake.Accelerate();
+
+    // Accelerate snake that got to the food cell first but remove the tail of snakes that got to the food
+    // cell subsequently.
+    for (std::size_t i = 0; i < snakesAtFoodCellPtrs.size(); i++) {
+      if (i == max_index) {
+        auto& growingSnake = *(snakesAtFoodCellPtrs[max_index]);
+        growingSnake.Grow();
+        growingSnake.Accelerate();
+      }
+      else {
+        // Remove the tails of snakes that got to the food cell after the first snake. This is because of 
+        // how the tails of any snake that is in the food cell after an update are not removed in case there
+        // are multiple snakes that also got to the food cell after that same update. This is to wait till
+        // a tie break is applied here in Game::CheckCollision().
+        snakesAtFoodCellPtrs[i]->_body_cells.pop_back(); 
+      }
+    }
+    
     PlaceFood();
   }
 
