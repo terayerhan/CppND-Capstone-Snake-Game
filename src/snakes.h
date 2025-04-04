@@ -50,25 +50,6 @@ class PlayerSnake : public Snake {
  
 };
 
-class Food : public Entity {
- public:
-   ~Food() override = default;
-
-   EntityType GetType() const override { return EntityType::Food; }
-   SDL_Point GetPosition() const override { return _position; }
-   int GetCellX() const override {return _position.x;}
-   int GetCellY() const override {return _position.y;}
-   bool IsActive() const override { return active; }
-   void Consume() { active = false; }
-   
-   // Makes Game a friend class, giving it access to private members (position in particular)
-   friend class Game;  
-
- private:
-   bool active;
-   SDL_Point _position;
-};
-
 
 /* ObstacleSnake: Snake controlled by the Game/computer that act as mobile walls.
    If Some snakes like PlayerSnake or AISnake run into the ObstacleSnake or if ObstacleSnake

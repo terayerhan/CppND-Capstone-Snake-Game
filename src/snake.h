@@ -2,7 +2,6 @@
 
 // Forward declarations
 class Game;
-class Food;
 class Controller;
 
 #include <vector>
@@ -12,6 +11,7 @@ class Controller;
 #include "Entity.h"
 #include "grid.h"
 #include "sdl_point_operators.h"
+#include "food.h"
 
 class Snake : public Entity {
  public:
