@@ -38,10 +38,10 @@ struct NodeCompare {
 class PlayerSnake : public Snake {
  public:
    PlayerSnake(
-      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
+      const Grid& grid, const Food& food, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const SDL_Point& head 
    ) 
-      : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {    
+      : Snake(grid, food, initialSpeed, deltaSpeedLimit, direction, head) {    
    }
 
    ~PlayerSnake() override = default;
@@ -77,10 +77,10 @@ class Food : public Entity {
 class ObstacleSnake : public Snake {
  public:
    ObstacleSnake(
-      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
+      const Grid& grid, const Food& food, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const SDL_Point& head, std::size_t initialLength
    ) 
-   : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head) {
+   : Snake(grid, food, initialSpeed, deltaSpeedLimit, direction, head) {
 
       InitializeBody(initialLength);         
    }
@@ -104,14 +104,13 @@ class ObstacleSnake : public Snake {
 class  AISnake : public Snake {
  public:
    AISnake(
-      const Grid& grid, float initialSpeed, float deltaSpeedLimit, Direction direction,
+      const Grid& grid, const Food& food, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const SDL_Point& head, const std::vector<ObstacleSnake>& obstacles, 
-      const PlayerSnake& playerSnake, const Food& food
+      const PlayerSnake& playerSnake
    )
-   : Snake(grid, initialSpeed, deltaSpeedLimit, direction, head),
+   : Snake(grid, food, initialSpeed, deltaSpeedLimit, direction, head),
       _obstacles(obstacles),                    // Read-only reference; no modifications allowed.
-      _playerSnake(playerSnake),                // Read-only reference.
-      _food(food),
+      _playerSnake(playerSnake),                // Read-only reference.      
       _predictedObstacles(_obstacles),          // Direct copy for prediction.
       _predictedPlayerSnake(_playerSnake)       // Direct copy for prediction.
    { }
@@ -126,8 +125,7 @@ class  AISnake : public Snake {
  private:
    const std::vector<ObstacleSnake>& _obstacles;
    const PlayerSnake& _playerSnake;
-   const Food& _food;
-
+   
    std::vector<ObstacleSnake> _predictedObstacles;
    PlayerSnake _predictedPlayerSnake ;
 

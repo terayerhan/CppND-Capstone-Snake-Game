@@ -19,9 +19,9 @@ class Game {
   int GetSize() const;
 
  private:
-  std::vector<ObstacleSnake> _obstacles;
-  PlayerSnake _playerSnake;
   Food _food;
+  std::vector<ObstacleSnake> _obstacles;
+  PlayerSnake _playerSnake;  
   AISnake _aiSnake;
 
   std::vector<Snake*> _allSnakes_ptrs;

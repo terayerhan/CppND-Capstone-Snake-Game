@@ -2,6 +2,7 @@
 
 // Forward declarations
 class Game;
+class Food;
 class Controller;
 
 #include <vector>
@@ -16,7 +17,8 @@ class Snake : public Entity {
  public:
   // Constructor.
   Snake(
-    const Grid& grid, 
+    const Grid& grid,
+    const Food& food, 
     float initialSpeed, 
     float deltaSpeedLimit, 
     Direction direction, 
@@ -26,6 +28,7 @@ class Snake : public Entity {
       _head_x(static_cast<float>(head.x)),
       _head_y(static_cast<float>(head.y)),
       _grid(grid),
+      _food(food),
       _delta_speed(std::clamp(deltaSpeedLimit, 0.001f, 0.01f))
   {
       // Place the head cell into the body container (head is at the front)
@@ -139,7 +142,8 @@ class Snake : public Entity {
   std::deque<SDL_Point> _body_cells;
   bool _growing{false};
   int _health;          //Review the need for _health or how to implement it.
-  const Grid& _grid;  
+  const Grid& _grid;
+  const Food& _food;  
 
  private:
   float _speed;               // Current speed of the snake
