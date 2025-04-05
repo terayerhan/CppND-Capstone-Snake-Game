@@ -57,7 +57,7 @@ struct NodeStateHash {
    std::size_t operator()(const NodeState& state) const {
       std::size_t hash = SDLPointHash()(state.cell);
       // Better bit mixing
-      hash ^= static_cast<int>(state.direction) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+      //hash ^= static_cast<int>(state.direction) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
       hash ^= state.timeStep + 0x9e3779b9 + (hash << 6) + (hash >> 2);
       return hash;
   }   
