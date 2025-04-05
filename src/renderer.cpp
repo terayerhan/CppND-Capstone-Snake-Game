@@ -72,16 +72,6 @@ void Renderer::Render(
   // Render food
   renderCell(food.GetPosition(), 0xFF, 0xCC, 0x00);
 
-  // Render playerSnake's body
-  renderSnakeBody(playerSnake, 0xFF, 0xFF, 0xFF);
-
-  // Render playerSnake's head with conditional coloring
-  if (playerSnake.IsActive()) {
-    renderCell(playerSnake.GetPosition(), 0x00, 0x7A, 0xCC);
-  } else {
-    renderCell(playerSnake.GetPosition(), 0xFF, 0x00, 0x00);
-  }
-
   // Render AISnake
   renderSnakeBody(aiSnake, 0x00, 0xCC, 0x00);  // green body
   renderCell(aiSnake.GetPosition(), 0x00, 0x88, 0x00);  // darker green head
@@ -90,6 +80,16 @@ void Renderer::Render(
   for(ObstacleSnake const &obstacle : obstacles) {
     renderSnakeBody(obstacle, 0xFF, 0x88, 0x88);  // Light red/pink body
     renderCell(obstacle.GetPosition(), 0xCC, 0x00, 0x00);  // Dark red head
+  }
+
+  // Render playerSnake's body
+  renderSnakeBody(playerSnake, 0xFF, 0xFF, 0xFF);
+  
+  // Render playerSnake's head with conditional coloring last so it is visible(in the foreground)
+  if (playerSnake.IsActive()) {
+    renderCell(playerSnake.GetPosition(), 0x00, 0x7A, 0xCC);
+  } else {
+    renderCell(playerSnake.GetPosition(), 0xFF, 0x00, 0x00);
   }
 
   // Update Screen
