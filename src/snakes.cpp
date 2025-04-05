@@ -391,10 +391,36 @@ void AISnake::FindPath() {
 
     bool notFirstIteration = false;
 
+    // Closed set of explored nodes
+    std::unordered_set<NodeState, NodeStateHash> closedNodesSet;
+
     // Begin A* search: process nodes until the open list is empty.
     while (!openList.empty()) {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
         openList.pop();                                  // Remove the node ptr from the openList.
+
+        // Create a NodeState from the current node
+        NodeState currentState(current->cell_, current->direction_, current->gCost_);
+        
+        // Skip if we've already explored this state
+        if (closedNodesSet.count(currentState) > 0) {
+            std::cout<< "SAME Node Detected;" << "  CurrentCell: "<< "  " <<
+            current->cell_.x << "  "<< current->cell_.y << 
+            "  gCost: " << current->gCost_ <<
+            "  fCost: " << current->fCost_ << 
+            "  currentDirection: "<< static_cast<int>(current->direction_)<<
+            "Skipping its exploration." <<std::endl;
+
+            if (current->parent_ != nullptr) {
+                // Show parent information for debugging.
+                std::cout<< "parentCell: " << current->parent_->cell_.x << "  " <<current->parent_->cell_.y
+                <<std::endl;
+            }
+            continue;
+        }
+        
+        // Add to closed set
+        closedNodesSet.insert(currentState);
 
         // Check if goal(food) has been reached.
         if (current->cell_ == goal) {
