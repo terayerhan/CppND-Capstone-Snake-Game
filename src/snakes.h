@@ -125,7 +125,7 @@ class  AISnake : public Snake {
    */
 
    size_t CalculateHeuristic(
-      const float headX, const float headY, const float& speed,
+      const float headX, const float headY, const float speed,
       const int goalX, const int goalY, const int gridWidth, const int gridHeight
    ) const;
 

@@ -34,7 +34,7 @@
  *         from the snake's current head position to the goal cell.
  */
 size_t AISnake::CalculateHeuristic( 
-    const float headX, const float headY, const float& speed,
+    const float headX, const float headY, const float speed,
     const int goalX, const int goalY, const int gridWidth, const int gridHeight
 ) const {
     // Determine the current grid cell of the snake's head.
