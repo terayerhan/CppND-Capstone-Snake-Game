@@ -34,6 +34,35 @@ struct NodeCompare {
    }
 };
 
+// Define a NodeState struct containing the essential unique properties of a node
+struct NodeState {
+   SDL_Point cell;        // Cell position (x,y)
+   Direction direction;   // Direction of travel
+   size_t timeStep;       // gCost - representing time steps taken
+
+   // Constructor
+   NodeState(SDL_Point c, Direction d, size_t t) 
+       : cell(c), direction(d), timeStep(t) {}
+
+   // Equality operator for unordered_set
+   bool operator==(const NodeState& other) const {
+       return cell == other.cell && 
+              direction == other.direction && 
+              timeStep == other.timeStep;
+   }
+};
+
+// Hash function for NodeState
+struct NodeStateHash {
+   std::size_t operator()(const NodeState& state) const {
+      std::size_t hash = SDLPointHash()(state.cell);
+      // Better bit mixing
+      hash ^= static_cast<int>(state.direction) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+      hash ^= state.timeStep + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+      return hash;
+  }   
+};
+
 // PlayerSnake: Snake Controlled by the User.
 class PlayerSnake : public Snake {
  public:

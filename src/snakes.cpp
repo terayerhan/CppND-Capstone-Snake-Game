@@ -478,8 +478,9 @@ void AISnake::FindPath() {
             current->cell_.x << "  "<< current->cell_.y << 
             "  gCost: " << current->gCost_ <<
             "  fCost: " << current->fCost_ <<
-            "  Goal: " << goal.x << " " << goal.y<< 
+            
             "  head: " << current->headX_ << "  "<< current->headY_ <<
+            "  Goal: " << goal.x << " " << goal.y<< 
             "  Speed: "<< GetSpeed() 
             //"  parentCell: " << current->parent_ != nullptr ? current->parent_->cell_.x :   << "  " <<current->parent_->cell_.y
             <<  "   NextDirection: "<< static_cast<int>(nextDirection)<< std::endl;
