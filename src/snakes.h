@@ -47,7 +47,7 @@ struct NodeState {
    // Equality operator for unordered_set
    bool operator==(const NodeState& other) const {
        return cell == other.cell && 
-              direction == other.direction && 
+              //direction == other.direction && 
               timeStep == other.timeStep;
    }
 };
