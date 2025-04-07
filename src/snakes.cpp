@@ -274,7 +274,83 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 */
                 return nullptr;
             }
-        } 
+        }
+        
+        
+        // Optional: Check if the path gurantees that there will be no collision of obstacles into aiSnake's body
+        // after it eats the food. This is an overly cautious attempt at making sure that there is no collision of
+        // obstacle snakes into the aiSnake's cells from the goal to tail after the aiSnake eats the food. Because of 
+        // this overly cautious approach, some more optimal paths may be discarded and it will also take more time to 
+        // find a path to goal, increasing latency of the pathfinding.
+        if (nextHeadCell == goal) {
+
+            float nextSpeed = speed + GetDeltaSpeed();  // The snake's speed will increase after eating food.
+            // Checdk nextTimeStep and future timeSteps that it will take for the tail cell to reach the food.
+            std::size_t tailToPastGoalTime = ceil(currentBodyCells.size() / nextSpeed);
+
+            // Copy nextHeadCell values to simulate it moving forward after reaching goal.
+            SDL_Point currentSimHeadCell = nextHeadCell;  
+            SDL_Point previouSimHeadCell = currentSimHeadCell;
+
+            float currentSimHeadX = nextHeadX;
+            float currentSimHeadY = nextHeadY;            
+
+            std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
+            "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
+            "  nextSpeed: " << nextSpeed
+            <<"  tailToPastGoalTime:   " << tailToPastGoalTime << std::endl;
+
+            // Move simulated aiSnake's head one step in nextDirction.
+            // Stop checking immediately the tail take the last step to leave the goal cell(
+            // "i < nextTimeStep + tailToPastGoalTime" Instead of "i <= nextTimeStep + tailToPastGoalTime").
+            for ( std::size_t i = nextTimeStep + 1; i < nextTimeStep + tailToPastGoalTime; i++ )  {                
+                std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
+                switch (nextDirection) {
+                    case Direction::kUp:
+                        currentSimHeadY -= nextSpeed;
+                        break;
+        
+                    case Direction::kDown:
+                        currentSimHeadY += nextSpeed;
+                        break;
+        
+                    case Direction::kLeft:
+                        currentSimHeadX -= nextSpeed;
+                        break;
+        
+                    case Direction::kRight:
+                        currentSimHeadX += nextSpeed;
+                        break;
+                }
+        
+                // Wrap the Snake around to the beginning if going off of the screen.  
+                std::pair<float, float> head_xy = _grid.WrapPosition(currentSimHeadX, currentSimHeadY);
+                currentSimHeadX = head_xy.first;
+                currentSimHeadY = head_xy.second;
+        
+                currentSimHeadCell.x = static_cast<int>(currentSimHeadX);
+                currentSimHeadCell.y = static_cast<int>(currentSimHeadY);
+
+                if (previouSimHeadCell !=  currentSimHeadCell) {
+                    previouSimHeadCell = currentSimHeadCell;
+
+                    // Update the currentBodyCells so collision check will be done on cells from the snake's cell
+                    // currently at goal cell to current tail cell position.
+                    currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
+                    std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
+                    currentBodyCells.size()
+                    << std::endl;
+                }
+
+                // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
+                for (const SDL_Point& cell : currentBodyCells) {
+                    std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl;
+
+                    if (_predictedObstaclesBlockedCells[i].count(cell) ) { return nullptr; }
+                } 
+            }
+
+        }        
 
         
     } // End of while loop moving snake and checking collisions.
