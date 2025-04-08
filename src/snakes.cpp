@@ -301,9 +301,8 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
             <<"  tailToPastGoalTime:   " << tailToPastGoalTime << std::endl;
 
             // Move simulated aiSnake's head one step in nextDirction.
-            // Stop checking immediately the tail take the last step to leave the goal cell(
-            // "i < nextTimeStep + tailToPastGoalTime" Instead of "i <= nextTimeStep + tailToPastGoalTime").
-            for ( std::size_t i = nextTimeStep + 1; i < nextTimeStep + tailToPastGoalTime; i++ )  {                
+            // Stop checking immediately the tail leaves the goal cell
+            for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + tailToPastGoalTime; i++ )  {                
                 std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
                 switch (nextDirection) {
                     case Direction::kUp:
