@@ -349,6 +349,27 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 } 
             }
 
+            // A collision free guaranteed path is found
+            ReconstructPath(
+                std::make_shared<Node>(
+                    nextHeadCell,
+                    nextTimeStep,
+                    nextTimeStep + CalculateHeuristic(
+                        nextHeadX, nextHeadY, speed, goal.x, goal.y, 
+                        _grid.GetWidth(), _grid.GetHeight()
+                    ),
+                    nextHeadX,
+                    nextHeadY,
+                    nextDirection,
+                    current
+                )
+            );
+
+            // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
+            // This is to enable early exit of FindPath().
+            IsGuaranteedPathFound = true;
+            return nullptr;  // dummy node to return to FindPath() and terminate search.
+
         }        
 
         
@@ -446,6 +467,11 @@ void AISnake::FindPath() {
     // Clear the maps of previouly predicted blocked cells and predict fresh ones.
     _predictedObstaclesBlockedCells.clear();
     _predictedPlayerBlockedCells.clear();
+
+    // Clear previous path variables.
+    IsGuaranteedPathFound = false;
+    _pathDirections.clear();   
+    _pathCells.clear(); 
 
     PredictObstacleBlockedCells(0, initialMaxTimeSteps);
     PredictPlayerBlockedCells(0, initialMaxTimeSteps);
@@ -588,6 +614,13 @@ void AISnake::FindPath() {
             std::cout << "  currentDirection: "<< static_cast<int>(current->direction_)<<
             "  oppositeDir: " << static_cast<int>(OppositeDirection(current->direction_)) << std::endl;
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
+
+            // Check if a guaranteed collision free path is found so as to end path finding early.
+            if (IsGuaranteedPathFound) {
+                std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
+                std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
+                return;  // Perfect Path found, exit the function.
+            }
             
 
             // If the node was successfully created (i.e., not null), add it to the open list.
