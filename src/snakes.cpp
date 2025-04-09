@@ -635,6 +635,24 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
 }
 
 
+// Helper: Reconstruct a complete path when a goal is reached.
+void AISnake::ReconstructPath(std::shared_ptr<Node> current) {
+    _pathDirections.clear();
+    _pathCells.clear();
+    std::shared_ptr<Node> nodePtr = current;
+    while (nodePtr->gCost_ > 0) {
+        std::shared_ptr<Node> parentPtr = nodePtr->parent_;
+        Direction directionToNode = nodePtr->direction_;
+        std::size_t stepsInDirection = nodePtr->gCost_ - parentPtr->gCost_;
+        for (std::size_t i = 0; i < stepsInDirection; i++) {
+            _pathDirections.push_back(directionToNode);
+        }
+        _pathCells.push_back(nodePtr->cell_);
+        nodePtr = parentPtr;
+    }
+}
+
+
 
 void ObstacleSnake::InitializeBody(std::size_t initialLength) {
     // Clear any existing body cells.
