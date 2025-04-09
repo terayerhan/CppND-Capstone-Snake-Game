@@ -36,19 +36,16 @@ struct NodeCompare {
 
 // Define a NodeState struct containing the essential unique properties of a node
 struct NodeState {
-   SDL_Point cell;        // Cell position (x,y)
-   Direction direction;   // Direction of travel
+   SDL_Point cell;        // Cell position (x,y)   
    size_t timeStep;       // gCost - representing time steps taken
 
    // Constructor
-   NodeState(SDL_Point c, Direction d, size_t t) 
-       : cell(c), direction(d), timeStep(t) {}
+   NodeState(SDL_Point c, size_t t) 
+       : cell(c), timeStep(t) {}
 
    // Equality operator for unordered_set
    bool operator==(const NodeState& other) const {
-       return cell == other.cell && 
-              //direction == other.direction && 
-              timeStep == other.timeStep;
+       return cell == other.cell && timeStep == other.timeStep;
    }
 };
 

@@ -502,7 +502,7 @@ void AISnake::FindPath() {
         openList.pop();                                  // Remove the node ptr from the openList.
 
         // Create a NodeState from the current node
-        NodeState currentState(current->cell_, current->direction_, current->gCost_);
+        NodeState currentState(current->cell_, current->gCost_);
         
         // Skip if we've already explored this state
         if (closedNodesSet.count(currentState) > 0) {
