@@ -507,6 +507,18 @@ void AISnake::FindPath() {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
         openList.pop();                                  // Remove the node ptr from the openList.
 
+        // Check timeout.
+        auto currentTime = std::chrono::steady_clock::now();
+        auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+        if (elapsedMs >= timeoutInMs) {
+            std::cout << "Timeout reached (" << elapsedMs << "ms), reconstructing partial path." << std::endl;
+            // Reconstruct a partial path from the current best node.
+            // Here, you can pick either the current node from openList.top() or choose the best candidate from openList.
+            // In this example, we take the current node. Or you might also consider other criteria
+            //ReconstructPartialPath(current);
+            return;
+        }
+
         // Create a NodeState from the current node
         NodeState currentState(current->cell_, current->gCost_);
         
