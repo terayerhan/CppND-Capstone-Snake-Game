@@ -142,6 +142,9 @@ class  AISnake : public Snake {
    // Path related variables
    std::vector<Direction> _pathDirections;   // For use in the SetDirection() to guide AISnake to food cell.
    std::vector<SDL_Point> _pathCells;        // Intended for use to review path when playerSnake changes direction.
+   std::size_t _aggressionLevel;  // determines if the snake will be more cautious or take higher risk path to food.
+   bool IsGuaranteedPathFound = false;  // Is there an overly cautious guaranteed collision free path to food?
+   bool IsInCollision = false; // Is there a cell in this snake currently colliding with an obstacle or self?
 
    // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
    std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstaclesBlockedCells;
