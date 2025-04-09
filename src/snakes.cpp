@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <iostream>
+#include <chrono>
 
 /**
  * @brief Calculates the heuristic (Manhattan distance in steps) from the snake's head to a goal cell,
@@ -416,6 +417,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
  */
 void AISnake::FindPath() {
     std::cout << "Started FindPath()"<< std::endl;
+
+    // Record start time.
+    auto startTime = std::chrono::steady_clock::now();
+    const long timeoutInMs = 500; // 500 milliseconds
+
     // Priority queue for open set.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
 
@@ -620,6 +626,10 @@ void AISnake::FindPath() {
             if (IsGuaranteedPathFound) {
                 std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
                 std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
+                // Check time to get cautious path.
+                auto currentTime = std::chrono::steady_clock::now();
+                auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+                std::cout << "Time Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
                 return;  // Perfect Path found, exit the function.
             }
             
