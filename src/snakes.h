@@ -166,6 +166,9 @@ class  AISnake : public Snake {
       std::deque<SDL_Point> currentBodyCells
    );
 
+   void ReconstructPath(std::shared_ptr<Node> current);
+   void ReconstructPartialPath(std::shared_ptr<Node> partialNode);
+
    
    //void ReviewPath();
   
