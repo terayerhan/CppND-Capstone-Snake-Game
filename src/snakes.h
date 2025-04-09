@@ -124,6 +124,8 @@ class  AISnake : public Snake {
 
    ~AISnake() override = default;
 
+   friend class Game;
+
    EntityType GetType() const override { return EntityType::AISnake;}
 
    void FindPath();

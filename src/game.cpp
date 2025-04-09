@@ -153,6 +153,7 @@ void Game::CheckCollisions() {
   if (_aiSnake.HasSelfCollision()) { 
     _aiSnake.Decelerate();
     //_aiSnake.Shrink();
+    _aiSnake.IsInCollision = true;
     std::cout << " Self_Collision Detected!!"<< std::endl;
   }
 
@@ -178,6 +179,7 @@ void Game::CheckCollisions() {
     }
     else {
       _aiSnake.Decelerate();
+      _aiSnake.IsInCollision = true;
     }
       
   }
@@ -191,6 +193,7 @@ void Game::CheckCollisions() {
     // Check aiSnake collision against playerSnake's rest of body. (may not be needed if aiSnake path planner works as intented)
     if ( _playerSnake.IsHitBelowHeadBy(aiSnakeHeadCell)) {
       _aiSnake.Decelerate();
+      _aiSnake.IsInCollision = true;
     }
   }
 
@@ -213,6 +216,7 @@ void Game::CheckCollisions() {
 
       if (_aiSnake.IsHitBy(obstacleCell)) {
         _aiSnake.Decelerate();
+        _aiSnake.IsInCollision = true;
         std::cout << "ObstacleSnake_Collision Detected"<< std::endl;
       }
     }

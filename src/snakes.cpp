@@ -678,16 +678,36 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
     // Check if state of food or playerSnake has change. That is food may have been eaten by player or
     // or obstacle snake or player snake may have changed direction and or eaten food. if any of these
     // happen, there is a chance that the current path has become invalidated, hence create new path plan.
-    if(IsPlayerSnakeChanged || IsFoodChanged) {
-        FindPath();            // RE-Calcualte path plan.
+    if(IsPlayerSnakeChanged || IsFoodChanged || _pathDirections.size() == 0) {
+        // Check if snake is not current in a collision with another snake or self.
+        // If there a collision with say obstacle then it may not be possible to find a path.
+        // (Need to investigate) 
+        if ( !IsInCollision) {
+            IsInCollision = false;
+            FindPath();            // RE-Calcualte path plan.
+        }        
     }
 
-    // Set Direction to the last direction in the _directions vector.
-    _direction = _pathDirections.back();
+    if (
+        IsGuaranteedPathFound || _aggressionLevel == 3 || IsInCollision || 
+        (_pathCells.size() != 0 && _pathCells.back() != _body_cells.back())
+    ) {
+        // Set Direction to the last direction in the _directions vector.
+        _direction = _pathDirections.back();
 
-    // Remove the current direction from the _pathDirections vector so that the next time this method is 
-    // called, the last element will be direction the AISnake will take next.
-    _pathDirections.pop_back();
+        // Remove the current direction from the _pathDirections vector so that the next time this method is 
+        // called, the last element will be direction the AISnake will take next.
+        _pathDirections.pop_back();
+    }
+    else {
+        // Reached a cell closer to goal, check if ther is a path to goal with (cautiously) no collision.
+        FindPath();
+    }
+
+    // At this point, it means Snake is in collision with another snake or self and there are no direction
+    // command signals in _pathDirection so snake should keep moving in the previously set direction as long
+    // as it takes before there is a change that triggers a path search again.
+    
 }
 
 
