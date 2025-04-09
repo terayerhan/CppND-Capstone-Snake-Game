@@ -339,6 +339,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                     std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
                     currentBodyCells.size()
                     << std::endl;
+                    if(currentBodyCells.size() == 0) break;
                 }
 
                 // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
