@@ -369,7 +369,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
             // This is to enable early exit of FindPath().
-            IsGuaranteedPathFound = true;
+            _IsGuaranteedPathFound = true;
             return nullptr;  // dummy node to return to FindPath() and terminate search.
 
         }        
@@ -476,7 +476,7 @@ void AISnake::FindPath() {
     _predictedPlayerBlockedCells.clear();
 
     // Clear previous path variables.
-    IsGuaranteedPathFound = false;
+    _IsGuaranteedPathFound = false;
     _pathDirections.clear();   
     _pathCells.clear(); 
 
@@ -635,7 +635,7 @@ void AISnake::FindPath() {
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
 
             // Check if a guaranteed collision free path is found so as to end path finding early.
-            if (IsGuaranteedPathFound) {
+            if (_IsGuaranteedPathFound) {
                 std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
                 std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
                 // Check time to get cautious path.
@@ -682,14 +682,14 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
         // Check if snake is not current in a collision with another snake or self.
         // If there a collision with say obstacle then it may not be possible to find a path.
         // (Need to investigate) 
-        if ( !IsInCollision) {
-            IsInCollision = false;
+        if ( !_IsInCollision) {
+            _IsInCollision = false;
             FindPath();            // RE-Calcualte path plan.
         }        
     }
 
     if (
-        IsGuaranteedPathFound || _aggressionLevel == 3 || IsInCollision || 
+        _IsGuaranteedPathFound || _aggressionLevel == 3 || _IsInCollision || 
         (_pathCells.size() != 0 && _pathCells.back() != _body_cells.back())
     ) {
         // Set Direction to the last direction in the _directions vector.
