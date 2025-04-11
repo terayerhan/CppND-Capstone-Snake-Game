@@ -145,6 +145,7 @@ class  AISnake : public Snake {
    bool _IsGuaranteedPathFound = false;  // Is there an overly cautious guaranteed collision free path to food?
    bool _IsInCollision = false; // Is there a cell in this snake currently colliding with an obstacle or self?
    SDL_Point _pathReCalcPoint; // A cell closer to goal where a pathfinding will be redone to see if a safer path has opened up.
+   std::size_t _MaxAggressionLevel = 10;
 
    // Predicted unordered_map of time_steps to unordered_sets of cells that will be blocked by Obstacle snakes
    std::unordered_map<size_t, std::unordered_set<SDL_Point, SDLPointHash>> _predictedObstaclesBlockedCells;

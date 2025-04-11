@@ -689,8 +689,8 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
     }
 
     if (
-        _IsGuaranteedPathFound || _aggressionLevel == 3 || _IsInCollision || 
-        (_pathCells.size() != 0 && _pathCells.back() != _body_cells.front())
+        _IsGuaranteedPathFound || _aggressionLevel == _MaxAggressionLevel || _IsInCollision || 
+        (_pathReCalcPoint != _body_cells.front())
     ) {
         // Set Direction to the last direction in the _directions vector.
         _direction = _pathDirections.back();
@@ -701,6 +701,7 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
     }
     else {
         // Reached a cell closer to goal, check if ther is a path to goal with (cautiously) no collision.
+        // i.e: _pathReCalcPoint == _body_cells.front() .
         FindPath();
     }
 
