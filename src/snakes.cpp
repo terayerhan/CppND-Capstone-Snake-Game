@@ -690,7 +690,7 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
 
     if (
         _IsGuaranteedPathFound || _aggressionLevel == 3 || _IsInCollision || 
-        (_pathCells.size() != 0 && _pathCells.back() != _body_cells.back())
+        (_pathCells.size() != 0 && _pathCells.back() != _body_cells.front())
     ) {
         // Set Direction to the last direction in the _directions vector.
         _direction = _pathDirections.back();
