@@ -607,7 +607,7 @@ void AISnake::FindPath() {
                 // Check time to get cautious path.
                 auto currentTime = std::chrono::steady_clock::now();
                 auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
-                std::cout << "Time Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
+                std::cout << "Time to Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
                 return;  // Perfect Path found, exit the function.
             }
             
@@ -634,7 +634,7 @@ void AISnake::FindPath() {
 
     // If the open list is exhausted without reaching the goal, no path was found.
     // (Optional: print or handle the "Path NOT Found" case.)
-    // std::cout << "Path NOT Found" << std::endl;
+    std::cout << "Path NOT Found" << std::endl;
 
 }
 
