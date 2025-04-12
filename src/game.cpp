@@ -143,6 +143,10 @@ SDL_Point Game::GetEmptyCell() {
  * progressed furthest into the cell will consume it and grow.
  */
 void Game::CheckCollisions() {
+  // Reset the _aiSnake _IsInCollision flag. This should enable the AISnake::SetDirection() to know when 
+  // the aiSnake is clear of a collision especially with obstacles.
+  _aiSnake._IsInCollision = false;
+
   // Check self-collision of playerSnake and AISnake.
   if (_playerSnake.HasSelfCollision()) { 
     _playerSnake.Decelerate();

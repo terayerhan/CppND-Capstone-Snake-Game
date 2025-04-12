@@ -683,7 +683,6 @@ void AISnake::SetDirection(bool IsPlayerSnakeChanged, bool IsFoodChanged) {
         // If there a collision with say obstacle then it may not be possible to find a path.
         // (Need to investigate) 
         if ( !_IsInCollision) {
-            _IsInCollision = false;
             FindPath();            // RE-Calcualte path plan.
         }        
     }
