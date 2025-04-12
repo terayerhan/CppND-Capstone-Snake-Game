@@ -141,6 +141,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
     ) {
     
     // Initialize the nextNode variables
+    std::shared_ptr<Node> nextNode = nullptr;
     float nextHeadX = current->headX_;         // Use this to update nextHeadCellX
     float nextHeadY = current->headY_;
 
@@ -276,6 +277,20 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 return nullptr;
             }
         }
+
+        // Make nextNode and optionally check if there will be an obstacle collison with the aiSnake after eating food.
+        nextNode = std::make_shared<Node>(
+            nextHeadCell,
+            nextTimeStep,
+            nextTimeStep + CalculateHeuristic(
+                nextHeadX, nextHeadY, speed, goal.x, goal.y, 
+                _grid.GetWidth(), _grid.GetHeight()
+            ),
+            nextHeadX,
+            nextHeadY,
+            nextDirection,
+            current
+        ); 
         
         
         // Optional: Check if the path gurantees that there will be no collision of obstacles into aiSnake's body
@@ -284,88 +299,84 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
         // this overly cautious approach, some more optimal paths may be discarded and it will also take more time to 
         // find a path to goal, increasing latency of the pathfinding.
         if (nextHeadCell == goal) {
+            if (_aggressionLevel != _MaxAggressionLevel) {
+                // Base on the aggressionLevel set, calculate the number of steps to check if it will be guaranteed
+                // (or at leat try) that the snake will not get into a collision with obstacle snakes.
+                float nextSpeed = speed + GetDeltaSpeed();  // The snake's speed will increase after eating food.
 
-            float nextSpeed = speed + GetDeltaSpeed();  // The snake's speed will increase after eating food.
-            // Checdk nextTimeStep and future timeSteps that it will take for the tail cell to reach the food.
-            std::size_t tailToPastGoalTime = ceil(currentBodyCells.size() / nextSpeed);
+                // Checdk nextTimeStep and future timeSteps that it will take for the tail cell to reach the food.
+                // WARNING: _aggressionLevel CANNOT be 0 to avoid division by zero.
+                std::size_t tailToPastGoalTime = ceil(currentBodyCells.size() / (nextSpeed * _aggressionLevel));
 
-            // Copy nextHeadCell values to simulate it moving forward after reaching goal.
-            SDL_Point currentSimHeadCell = nextHeadCell;  
-            SDL_Point previouSimHeadCell = currentSimHeadCell;
+                // Copy nextHeadCell values to simulate it moving forward after reaching goal.
+                SDL_Point currentSimHeadCell = nextHeadCell;  
+                SDL_Point previouSimHeadCell = currentSimHeadCell;
 
-            float currentSimHeadX = nextHeadX;
-            float currentSimHeadY = nextHeadY;            
+                float currentSimHeadX = nextHeadX;
+                float currentSimHeadY = nextHeadY;            
 
-            std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
-            "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
-            "  nextSpeed: " << nextSpeed
-            <<"  tailToPastGoalTime:   " << tailToPastGoalTime << std::endl;
+                std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
+                "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
+                "  nextSpeed: " << nextSpeed
+                <<"  tailToPastGoalTime:   " << tailToPastGoalTime << std::endl;
 
-            // Move simulated aiSnake's head one step in nextDirction.
-            // Stop checking immediately the tail leaves the goal cell
-            for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + tailToPastGoalTime; i++ )  {                
-                std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
-                switch (nextDirection) {
-                    case Direction::kUp:
-                        currentSimHeadY -= nextSpeed;
-                        break;
-        
-                    case Direction::kDown:
-                        currentSimHeadY += nextSpeed;
-                        break;
-        
-                    case Direction::kLeft:
-                        currentSimHeadX -= nextSpeed;
-                        break;
-        
-                    case Direction::kRight:
-                        currentSimHeadX += nextSpeed;
-                        break;
+                // Move simulated aiSnake's head one step in nextDirction.
+                // Stop checking immediately the tail leaves the goal cell
+                for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + tailToPastGoalTime; i++ )  {                
+                    std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
+                    switch (nextDirection) {
+                        case Direction::kUp:
+                            currentSimHeadY -= nextSpeed;
+                            break;
+            
+                        case Direction::kDown:
+                            currentSimHeadY += nextSpeed;
+                            break;
+            
+                        case Direction::kLeft:
+                            currentSimHeadX -= nextSpeed;
+                            break;
+            
+                        case Direction::kRight:
+                            currentSimHeadX += nextSpeed;
+                            break;
+                    }
+            
+                    // Wrap the Snake around to the beginning if going off of the screen.  
+                    std::pair<float, float> head_xy = _grid.WrapPosition(currentSimHeadX, currentSimHeadY);
+                    currentSimHeadX = head_xy.first;
+                    currentSimHeadY = head_xy.second;
+            
+                    currentSimHeadCell.x = static_cast<int>(currentSimHeadX);
+                    currentSimHeadCell.y = static_cast<int>(currentSimHeadY);
+
+                    if (previouSimHeadCell !=  currentSimHeadCell) {
+                        previouSimHeadCell = currentSimHeadCell;
+
+                        // Update the currentBodyCells so collision check will be done on cells from the snake's cell
+                        // currently at goal cell to current tail cell position.
+                        currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
+                        std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
+                        currentBodyCells.size()
+                        << std::endl;
+                        if(currentBodyCells.size() == 0) break;
+                    }
+
+                    // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
+                    for (const SDL_Point& cell : currentBodyCells) {
+                        std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl;
+
+                        if (_predictedObstaclesBlockedCells[i].count(cell) ) { 
+                            ReconstructPartialPath(nextNode);
+                            return nullptr; 
+                        }
+                    } 
                 }
-        
-                // Wrap the Snake around to the beginning if going off of the screen.  
-                std::pair<float, float> head_xy = _grid.WrapPosition(currentSimHeadX, currentSimHeadY);
-                currentSimHeadX = head_xy.first;
-                currentSimHeadY = head_xy.second;
-        
-                currentSimHeadCell.x = static_cast<int>(currentSimHeadX);
-                currentSimHeadCell.y = static_cast<int>(currentSimHeadY);
+            }           
 
-                if (previouSimHeadCell !=  currentSimHeadCell) {
-                    previouSimHeadCell = currentSimHeadCell;
-
-                    // Update the currentBodyCells so collision check will be done on cells from the snake's cell
-                    // currently at goal cell to current tail cell position.
-                    currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
-                    std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
-                    currentBodyCells.size()
-                    << std::endl;
-                    if(currentBodyCells.size() == 0) break;
-                }
-
-                // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
-                for (const SDL_Point& cell : currentBodyCells) {
-                    std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl;
-
-                    if (_predictedObstaclesBlockedCells[i].count(cell) ) { return nullptr; }
-                } 
-            }
-
-            // A collision free guaranteed path is found
-            ReconstructPath(
-                std::make_shared<Node>(
-                    nextHeadCell,
-                    nextTimeStep,
-                    nextTimeStep + CalculateHeuristic(
-                        nextHeadX, nextHeadY, speed, goal.x, goal.y, 
-                        _grid.GetWidth(), _grid.GetHeight()
-                    ),
-                    nextHeadX,
-                    nextHeadY,
-                    nextDirection,
-                    current
-                )
-            );
+            // A collision free guaranteed path is found or aggressionLevel is set to maximum. Reconstruct path and
+            // end pathFinding.
+            ReconstructPath(nextNode);
 
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
             // This is to enable early exit of FindPath().
@@ -381,18 +392,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
        playerSnake or self when it take nextDirection from current position in current cell. return 
        shared_ptr to resulting Node.
     */
-    return std::make_shared<Node>(
-        nextHeadCell,
-        nextTimeStep,
-        nextTimeStep + CalculateHeuristic(
-            nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(), 
-            _grid.GetWidth(), _grid.GetHeight()
-        ),
-        nextHeadX,
-        nextHeadY,
-        nextDirection,
-        current
-    );
+    return nextNode;
     
 }
 
@@ -515,7 +515,7 @@ void AISnake::FindPath() {
             // Reconstruct a partial path from the current best node.
             // Here, you can pick either the current node from openList.top() or choose the best candidate from openList.
             // In this example, we take the current node. Or you might also consider other criteria
-            //ReconstructPartialPath(current);
+            ReconstructPartialPath(current);
             return;
         }
 
@@ -541,39 +541,7 @@ void AISnake::FindPath() {
         
         // Add to closed set
         closedNodesSet.insert(currentState);
-
-        // Check if goal(food) has been reached.
-        if (current->cell_ == goal) {
-            // Reconstruct the path cells and the directions to take at each step in the game loop.//
-            // Clear any previous path directions and cells.
-            _pathDirections.clear();   
-            _pathCells.clear();        
-
-            // Backtrack till start node (first node going backwards that have gCost == 0) is reached.
-            std::shared_ptr<Node> nodePtr = current;
-            while (nodePtr->gCost_ > 0) {
-                std::shared_ptr<Node> parentPtr = nodePtr->parent_; 
-                Direction directionToNode = nodePtr->direction_;   // Direction from the parent to this node.
-
-                // Determine the number of steps needed from parent node to this node via direction to Node.
-                std::size_t stepsInDirection = nodePtr->gCost_ - parentPtr->gCost_;
-
-                // Append the same direction repeatedly based on the number of steps.
-                for ( std::size_t i=0; i<stepsInDirection; i++) {
-                    _pathDirections.push_back(directionToNode);
-                }
-
-                // Append the cell(of nodePtr) the snake will arrive at when it take those steps.
-                _pathCells.push_back(nodePtr->cell_);
-
-                nodePtr = parentPtr;   // Move to the parent node to continue backtracking.
-            }
-            std::cout << "Path Found -- End FindPath()"<< std::endl;
-            return;  // Path found, exit the function.
-
-        } 
-
-
+        
         /* Reconstruct the snake's body when its head is at the current node's cell. For times when 
            the snake is longer than one cell and it head is not at a node with a cell position that
            is not more than the snake's body size cell moves from its search  starting head cell, 
@@ -596,7 +564,6 @@ void AISnake::FindPath() {
             nodePtr = nodePtr->parent_;
         }
 
-
         // Create a vector of possible Directions the snake can move in at any given cell position.
         std::vector<Direction> possibleDirections {
             Direction::kUp, 
@@ -604,7 +571,6 @@ void AISnake::FindPath() {
             Direction::kLeft, 
             Direction::kRight
         };
-
 
         /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
            node through each direction from current node float head position.
