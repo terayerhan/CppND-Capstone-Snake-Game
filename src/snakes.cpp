@@ -729,6 +729,25 @@ void AISnake::ReconstructPath(std::shared_ptr<Node> current) {
 }
 
 
+void AISnake::ReconstructPartialPath(std::shared_ptr<Node> current) {
+    if(_pathDirections.size() > 0) {
+        // There is already a path constructed even if it is not the most the safest.
+        return;
+    }
+
+    std::size_t nextSnakeSize = _body_cells.size() + 1;
+
+    ReconstructPath(current);
+
+    if(_pathCells.size() > nextSnakeSize) {
+        _pathReCalcPoint = _pathCells[nextSnakeSize];
+    }
+    else {
+        _pathReCalcPoint = _pathCells.back();
+    }
+}
+
+
 
 void ObstacleSnake::InitializeBody(std::size_t initialLength) {
     // Clear any existing body cells.
