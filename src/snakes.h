@@ -113,13 +113,15 @@ class  AISnake : public Snake {
    AISnake(
       const Grid& grid, const Food& food, float initialSpeed, float deltaSpeedLimit, Direction direction,
       const SDL_Point& head, const std::vector<ObstacleSnake>& obstacles, 
-      const PlayerSnake& playerSnake
+      const PlayerSnake& playerSnake,
+      std::size_t aggressionLevel
    )
    : Snake(grid, food, initialSpeed, deltaSpeedLimit, direction, head),
       _obstacles(obstacles),                    // Read-only reference; no modifications allowed.
       _playerSnake(playerSnake),                // Read-only reference.      
       _predictedObstacles(_obstacles),          // Direct copy for prediction.
-      _predictedPlayerSnake(_playerSnake)       // Direct copy for prediction.
+      _predictedPlayerSnake(_playerSnake),       // Direct copy for prediction.
+      _aggressionLevel(aggressionLevel)
    { }
 
    ~AISnake() override = default;

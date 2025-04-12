@@ -36,7 +36,8 @@ Game::Game(Grid& grid)
       static_cast<int>(grid.GetWidth() / 2 + 1),  // place aiSnake one cell to the right of playerSnake
       static_cast<int>(grid.GetHeight() / 2)
     }, // initial head for the AI snake.
-    _obstacles, _playerSnake
+    _obstacles, _playerSnake,
+    1  //_aggressionLevel hardcoded for testing for now. This value should be dictated by user game settings.
   )
 {
   // Populate the vector of snake pointers for collision checks, etc.
