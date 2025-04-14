@@ -117,12 +117,12 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
        amount of timeSteps it will take for the body to clear the head of the obstacle snake will be dependent on
        the current speed plus the increase in speed after eating food which is constant(_delta_speed) for each snake.        
     */
-    maxTimeStep += (_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
+    maxTimeStep += ceil(_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
     
     // Predict obstacle Snakes blocked cells
     for(ObstacleSnake& obstacle : _predictedObstacles) {
         // [potential loops for concurrency]
-        for(std::size_t i = initialTimeStep; i < maxTimeStep; i++) {
+        for(std::size_t i = initialTimeStep; i <= maxTimeStep; i++) {
             obstacle.Update();   // simulate a single time step move.
 
             // Insert the resulting body_cells after the step into the unordered_set of obstacle snakes
