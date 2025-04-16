@@ -502,6 +502,14 @@ void AISnake::FindPath() {
     // Closed set of explored nodes
     std::unordered_set<NodeState, NodeStateHash> closedNodesSet;
 
+    // Create a vector of possible Directions the snake can move in at any given cell position.
+    std::vector<Direction> possibleDirections {
+        Direction::kUp, 
+        Direction::kDown, 
+        Direction::kLeft, 
+        Direction::kRight
+    };
+
     // Begin A* search: process nodes until the open list is empty.
     while (!openList.empty()) {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
@@ -563,14 +571,6 @@ void AISnake::FindPath() {
             currentBodyCells.push_back(nodePtr->cell_);
             nodePtr = nodePtr->parent_;
         }
-
-        // Create a vector of possible Directions the snake can move in at any given cell position.
-        std::vector<Direction> possibleDirections {
-            Direction::kUp, 
-            Direction::kDown, 
-            Direction::kLeft, 
-            Direction::kRight
-        };
 
         /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
            node through each direction from current node float head position.
