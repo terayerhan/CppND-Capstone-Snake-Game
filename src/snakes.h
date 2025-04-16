@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
+#include <future>
 
 struct Node {
    SDL_Point cell_;
@@ -174,6 +175,7 @@ class  AISnake : public Snake {
 
    void ReconstructPath(std::shared_ptr<Node> current);
    void ReconstructPartialPath(std::shared_ptr<Node> partialNode);
+   void PredictSnakesBlockedCells(std::size_t playerMaxTimeStep, std::size_t obstacleMaxTimeStep);
 
    
    //void ReviewPath();
