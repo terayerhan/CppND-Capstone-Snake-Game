@@ -306,7 +306,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
                 // Checdk nextTimeStep and future timeSteps that it will take for the tail cell to reach the food.
                 // WARNING: _aggressionLevel CANNOT be 0 to avoid division by zero.
-                std::size_t tailToPastGoalTime = ceil(currentBodyCells.size() / (nextSpeed * _aggressionLevel));
+                //std::size_t tailToPastGoalTime = ceil(currentBodyCells.size() / (nextSpeed * _aggressionLevel));
 
                 // Copy nextHeadCell values to simulate it moving forward after reaching goal.
                 SDL_Point currentSimHeadCell = nextHeadCell;  
@@ -318,11 +318,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
                 "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
                 "  nextSpeed: " << nextSpeed
-                <<"  tailToPastGoalTime:   " << tailToPastGoalTime << std::endl;
+                <<"  tailToPastGoalTime:   " << _tailToPastGoalTime << std::endl;
 
                 // Move simulated aiSnake's head one step in nextDirction.
                 // Stop checking immediately the tail leaves the goal cell
-                for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + tailToPastGoalTime; i++ )  {                
+                for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + _tailToPastGoalTime; i++ )  {                
                     std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
                     switch (nextDirection) {
                         case Direction::kUp:
@@ -466,6 +466,9 @@ void AISnake::FindPath() {
     std::size_t initialMaxTimeSteps = CalculateHeuristic(
         _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
     );
+
+    // WARNING: _aggressionLevel CANNOT be 0 to avoid division by zero.
+    _tailToPastGoalTime = ceil((snakeSize + 1)  / ((speed + GetDeltaSpeed()) * _aggressionLevel));
 
     // Re-initialize the predicted snake object for simulating move steps to predict blocked cells.
     _predictedObstacles = _obstacles;
