@@ -89,8 +89,6 @@ size_t AISnake::CalculateHeuristic(
 }
 
 
-
-
 void AISnake::PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
     // Predict playerSnake blocked cells [potential loop for concurrency]
     for(std::size_t i = initialTimeStep; i < maxTimeStep; i++) {
@@ -105,20 +103,7 @@ void AISnake::PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t
 }
 
 
-
 void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep) {
-    // Add a buffer amount of timeSteps to allow the snake's body to pass in front of an obstacle snake after 
-    // it eats the food. This is because if obstacleSnake blocked cells are only predicted up to the time the
-    // head of the aiSnake reaches the food, the aiSnake will not accont the collision of the obstacles with its
-    // body after it reaches the food.
-    /* The buffer amount of timeSteps to add to the maxTimeStep for ObstacleBlockedCells prediction is 
-       1 + the current size of the snake because the snake will increase in size by one when it eats the food
-       divde by the speed the snake will have after it eats the food because when the snake eats the food, the 
-       amount of timeSteps it will take for the body to clear the head of the obstacle snake will be dependent on
-       the current speed plus the increase in speed after eating food which is constant(_delta_speed) for each snake.        
-    */
-    maxTimeStep += ceil(_body_cells.size() + 1) / (GetSpeed() + GetDeltaSpeed());
-    
     // Predict obstacle Snakes blocked cells
     for(ObstacleSnake& obstacle : _predictedObstacles) {
         // [potential loops for concurrency]
@@ -133,7 +118,6 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
         }
     }
 }
-
 
 
 std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
@@ -467,6 +451,16 @@ void AISnake::FindPath() {
         _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
     );
 
+    // Add a buffer amount of timeSteps to allow the snake's body to pass in front of an obstacle snake after 
+    // it eats the food. This is because if obstacleSnake blocked cells are only predicted up to the time the
+    // head of the aiSnake reaches the food, the aiSnake will not accont the collision of the obstacles with its
+    // body after it reaches the food.
+    /* The buffer amount of timeSteps to add to the maxTimeStep for ObstacleBlockedCells prediction is 
+       1 + the current size of the snake because the snake will increase in size by one when it eats the food
+       divde by the speed the snake will have after it eats the food because when the snake eats the food, the 
+       amount of timeSteps it will take for the body to clear the head of the obstacle snake will be dependent on
+       the current speed plus the increase in speed after eating food which is constant(_delta_speed) for each snake.        
+    */
     // WARNING: _aggressionLevel CANNOT be 0 to avoid division by zero.
     _tailToPastGoalTime = ceil((snakeSize + 1)  / ((speed + GetDeltaSpeed()) * _aggressionLevel));
 
@@ -478,13 +472,12 @@ void AISnake::FindPath() {
     _predictedObstaclesBlockedCells.clear();
     _predictedPlayerBlockedCells.clear();
 
+    PredictSnakesBlockedCells(initialMaxTimeSteps, initialMaxTimeSteps + _tailToPastGoalTime);
+
     // Clear previous path variables.
     _IsGuaranteedPathFound = false;
     _pathDirections.clear();   
     _pathCells.clear(); 
-
-    PredictObstacleBlockedCells(0, initialMaxTimeSteps);
-    PredictPlayerBlockedCells(0, initialMaxTimeSteps);
 
     // Create and add the start node to the open list.
     // The start node is based on the snake's head and uses the last dummy node from the body as its parent.
