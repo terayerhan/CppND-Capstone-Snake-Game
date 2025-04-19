@@ -299,15 +299,15 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 float currentSimHeadX = nextHeadX;
                 float currentSimHeadY = nextHeadY;            
 
-                std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
+                /* std::cout <<"aiSnake_Size: "<< _body_cells.size() <<
                 "   Current_Speed: " << speed << "  currentBodyCells: " << currentBodyCells.size() <<
                 "  nextSpeed: " << nextSpeed
-                <<"  tailToPastGoalTime:   " << _tailToPastGoalTime << std::endl;
+                <<"  tailToPastGoalTime:   " << _tailToPastGoalTime << std::endl; */
 
                 // Move simulated aiSnake's head one step in nextDirction.
                 // Stop checking immediately the tail leaves the goal cell
                 for ( std::size_t i = nextTimeStep + 1; i <= nextTimeStep + _tailToPastGoalTime; i++ )  {                
-                    std::cout << "nextTimeStep + steps to goal: "<< i << std::endl;
+                    /* std::cout << "nextTimeStep + steps to goal: "<< i << std::endl; */
                     switch (nextDirection) {
                         case Direction::kUp:
                             currentSimHeadY -= nextSpeed;
@@ -340,15 +340,15 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                         // Update the currentBodyCells so collision check will be done on cells from the snake's cell
                         // currently at goal cell to current tail cell position.
                         currentBodyCells.pop_back();    // Remove the tail since it will move forward by now.
-                        std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
+                        /* std::cout << "Updating CurrenBodyCells after eating food.   CurrentBodySize:   "<< 
                         currentBodyCells.size()
-                        << std::endl;
+                        << std::endl; */
                         if(currentBodyCells.size() == 0) break;
                     }
 
                     // Check collision of the remaining cells in currentBody between goal cell to current tail cell.
                     for (const SDL_Point& cell : currentBodyCells) {
-                        std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl;
+                        /* std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl; */
 
                         if (_predictedObstaclesBlockedCells[i].count(cell) ) { 
                             ReconstructPartialPath(nextNode);
@@ -441,14 +441,21 @@ void AISnake::FindPath() {
         }
     }
 
-    SDL_Point goal = _food.GetPosition(); // Cach the food location as goal cell.
+    // Cache food location values.
+    SDL_Point goal = _food.GetPosition(); // Cache the food location as goal cell.
+    int goalX = goal.x; 
+    int goalY = goal.y;
+
+    // Cache the grid values
+    std::size_t gridWidth =  _grid.GetWidth();
+    std::size_t gridHeight = _grid.GetHeight();
 
     float speed = GetSpeed();
     std::cout << "Speed before caclulating initial time steps" << speed << std::endl;
 
     // Get the initial number of steps it will take to get to the goal if there were no blocked cells.
     std::size_t initialMaxTimeSteps = CalculateHeuristic(
-        _head_x, _head_y, GetSpeed(), goal.x, goal.y, _grid.GetWidth(), _grid.GetHeight()
+        _head_x, _head_y, speed, goalX, goalY, gridWidth, gridHeight
     );
 
     // Add a buffer amount of timeSteps to allow the snake's body to pass in front of an obstacle snake after 
@@ -473,6 +480,10 @@ void AISnake::FindPath() {
     _predictedPlayerBlockedCells.clear();
 
     PredictSnakesBlockedCells(initialMaxTimeSteps, initialMaxTimeSteps + _tailToPastGoalTime);
+
+    // Calculate the max number of timeStep required in blocked cells map of playerSnake for moving from one 
+    // cell to another.
+    std::size_t nextMaxPossibleTimeSteps = ceil(1 / speed);
 
     // Clear previous path variables.
     _IsGuaranteedPathFound = false;
@@ -528,18 +539,18 @@ void AISnake::FindPath() {
         
         // Skip if we've already explored this state
         if (closedNodesSet.count(currentState) > 0) {
-            std::cout<< "SAME Node Detected;" << "  CurrentCell: "<< "  " <<
+            /* std::cout<< "SAME Node Detected;" << "  CurrentCell: "<< "  " <<
             current->cell_.x << "  "<< current->cell_.y << 
             "  gCost: " << current->gCost_ <<
             "  fCost: " << current->fCost_ << 
             "  currentDirection: "<< static_cast<int>(current->direction_)<<
-            "Skipping its exploration." <<std::endl;
+            "Skipping its exploration." <<std::endl; */
 
-            if (current->parent_ != nullptr) {
+            /* if (current->parent_ != nullptr) {
                 // Show parent information for debugging.
                 std::cout<< "parentCell: " << current->parent_->cell_.x << "  " <<current->parent_->cell_.y
                 <<std::endl;
-            }
+            } */
             continue;
         }
         
@@ -582,7 +593,7 @@ void AISnake::FindPath() {
             }
 
             // Attempt to create a new node in the specified nextDirection
-            std::cout<< "AddNode() started"<<"  "<< "  CurrentCell: "<< "  " <<
+            /* std::cout<< "AddNode() started"<<"  "<< "  CurrentCell: "<< "  " <<
             current->cell_.x << "  "<< current->cell_.y << 
             "  gCost: " << current->gCost_ <<
             "  fCost: " << current->fCost_ <<
@@ -593,7 +604,7 @@ void AISnake::FindPath() {
             //"  parentCell: " << current->parent_ != nullptr ? current->parent_->cell_.x :   << "  " <<current->parent_->cell_.y
             <<  "   NextDirection: "<< static_cast<int>(nextDirection)<< std::endl;
             std::cout << "  currentDirection: "<< static_cast<int>(current->direction_)<<
-            "  oppositeDir: " << static_cast<int>(OppositeDirection(current->direction_)) << std::endl;
+            "  oppositeDir: " << static_cast<int>(OppositeDirection(current->direction_)) << std::endl; */
             std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
 
             // Check if a guaranteed collision free path is found so as to end path finding early.
@@ -610,17 +621,17 @@ void AISnake::FindPath() {
 
             // If the node was successfully created (i.e., not null), add it to the open list.
             if (nextNodePtr != nullptr) {
-                std::cout<< "AddNode() End    NextCell: "<< nextNodePtr->cell_.x<< "  " << nextNodePtr->cell_.y <<
+                /* std::cout<< "AddNode() End    NextCell: "<< nextNodePtr->cell_.x<< "  " << nextNodePtr->cell_.y <<
                 "  gCost: " << nextNodePtr->gCost_ << "  fCost: " << nextNodePtr->fCost_ <<
                 "  head: " << nextNodePtr->headX_ << "  "<< nextNodePtr->headY_ 
-                << std::endl;
+                << std::endl; */
                 // If the node is valid, push its pointer onto the open list (a priority queue).
                 // The open list is used in pathfinding algorithms (e.g., A*) to store nodes that 
                 // are pending exploration.
                 openList.push(nextNodePtr); // Enqueue the node for further processing.
             }
             else{
-                std::cout<< "AddNode() End    NextCell:  InVAlid  "<< std::endl;
+                /* std::cout<< "AddNode() End    NextCell:  InVAlid  "<< std::endl; */
             }
         }
 
