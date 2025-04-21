@@ -376,7 +376,7 @@ void AISnake::FindPath() {
 
     // Record start time.
     auto startTime = std::chrono::steady_clock::now();
-    const long timeoutInMs = 500; // 500 milliseconds
+    const long timeoutInMs = 250; // 500 milliseconds
 
     // Priority queue for open set with mutex for thread safety.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
