@@ -720,12 +720,9 @@ void AISnake::ReconstructPartialPath(std::shared_ptr<Node> current) {
 
     ReconstructPath(current);
 
-    if(_pathCells.size() > nextSnakeSize) {
-        _pathReCalcPoint = _pathCells[nextSnakeSize];
-    }
-    else {
-        _pathReCalcPoint = _pathCells.back();
-    }
+    if(_pathCells.size() > 0) {
+        _pathReCalcPoint = _pathCells[nextSnakeSize * 3/4];
+    }    
 }
 
 
