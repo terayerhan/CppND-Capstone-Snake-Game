@@ -315,12 +315,12 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
             // A collision free guaranteed path is found or aggressionLevel is set to maximum. Reconstruct path and
             // end pathFinding.
-            ReconstructPath(nextNode);
+            //ReconstructPath(nextNode);
 
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
             // This is to enable early exit of FindPath().
-            _IsGuaranteedPathFound = true;
-            return nullptr;  // dummy node to return to FindPath() and terminate search.
+            //_IsGuaranteedPathFound = true;
+            return nextNode;  // dummy node to return to FindPath() and terminate search.
 
         }        
 
@@ -479,13 +479,18 @@ void AISnake::FindPath() {
 
         // Check if A collision free guaranteed path is found or aggressionLevel is set to maximum. 
         // Reconstruct path and end pathFinding.
-        /* if (current->cell_ == goal) {
+        if (current->cell_ == goal) {
             ReconstructPath(current);
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
-            std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
             _IsGuaranteedPathFound = true;
+            std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
+            std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
+            // Check time to get cautious path.
+            auto currentTime = std::chrono::steady_clock::now();
+            auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+            std::cout << "Time to Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
             return;
-        } */
+        }
 
         // Check timeout.
         auto currentTime = std::chrono::steady_clock::now();
