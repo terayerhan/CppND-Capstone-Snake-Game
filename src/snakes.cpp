@@ -737,19 +737,16 @@ void AISnake::ReconstructPartialPath(std::shared_ptr<Node> current) {
 
 
 void AISnake::PredictSnakesBlockedCells(std::size_t playerMaxTimeStep, std::size_t obstacleMaxTimeStep) {
-    // Launch both prediction methods asynchronously.
-    // Starting at time step 0.
+    // Launch only player prediction asynchronously
     auto playerFuture = std::async(std::launch::async,
-                                   &AISnake::PredictPlayerBlockedCells,
-                                   this, _predictedPlayerBlockedCells.size(), playerMaxTimeStep);
+                                  &AISnake::PredictPlayerBlockedCells,
+                                  this, _predictedPlayerBlockedCells.size(), playerMaxTimeStep);
     
-    auto obstacleFuture = std::async(std::launch::deferred,
-                                     &AISnake::PredictObstacleBlockedCells,
-                                     this, _predictedObstaclesBlockedCells.size(), obstacleMaxTimeStep);
+    // Use the main thread to predict obstacle blocked cells
+    PredictObstacleBlockedCells(_predictedObstaclesBlockedCells.size(), obstacleMaxTimeStep);
     
-    // Wait for both tasks to complete so that the maps are fully populated.
+    // Wait for the player prediction to complete
     playerFuture.wait();
-    obstacleFuture.wait();
 }
 
 
