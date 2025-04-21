@@ -479,13 +479,13 @@ void AISnake::FindPath() {
 
         // Check if A collision free guaranteed path is found or aggressionLevel is set to maximum. 
         // Reconstruct path and end pathFinding.
-        if (current->cell_ == goal) {
+        /* if (current->cell_ == goal) {
             ReconstructPath(current);
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
             std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
             _IsGuaranteedPathFound = true;
             return;
-        }
+        } */
 
         // Check timeout.
         auto currentTime = std::chrono::steady_clock::now();
