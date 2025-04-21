@@ -701,16 +701,11 @@ void AISnake::ReconstructPartialPath(std::shared_ptr<Node> current) {
 
 
 void AISnake::PredictSnakesBlockedCells(std::size_t playerMaxTimeStep, std::size_t obstacleMaxTimeStep) {
-    // Launch only player prediction asynchronously
-    auto playerFuture = std::async(std::launch::async,
-                                  &AISnake::PredictPlayerBlockedCells,
-                                  this, _predictedPlayerBlockedCells.size(), playerMaxTimeStep);
     
-    // Use the main thread to predict obstacle blocked cells
-    PredictObstacleBlockedCells(_predictedObstaclesBlockedCells.size(), obstacleMaxTimeStep);
+    PredictPlayerBlockedCells(_predictedPlayerBlockedCells.size(), playerMaxTimeStep);   
     
-    // Wait for the player prediction to complete
-    playerFuture.wait();
+    PredictObstacleBlockedCells(_predictedObstaclesBlockedCells.size(), obstacleMaxTimeStep);   
+    
 }
 
 
