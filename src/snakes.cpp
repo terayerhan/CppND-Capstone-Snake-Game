@@ -222,8 +222,9 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 }
             }
             else {
+                std::cout << "                                                     Need MOre  TimeSteps "<< std::endl;
                 /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
-                PredictObstacleBlockedCells(
+                /* PredictObstacleBlockedCells(
                     nextTimeStep,
                     CalculateHeuristic(
                         nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
@@ -237,15 +238,15 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                         nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
                         _grid.GetWidth(), _grid.GetHeight()
                     )
-                );
+                ); */
 
                 /* nextTimeStep Should Now exist in the blockedCells unordered_maps, check for collision
                    playerSnake. 
                 */
-                if (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) ) {
+                /* if (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) ) {
                     std::cout << "Predicted Collision with PlayerSnake after adding more TimeSteps "<< std::endl;                                           
                     return nullptr;
-                }
+                } */
             }
 
         }  // End checking if snake will reach next cell.
@@ -453,10 +454,14 @@ void AISnake::FindPath() {
     float speed = GetSpeed();
     std::cout << "Speed before caclulating initial time steps" << speed << std::endl;
 
+    // Calculate the max number of timeStep required in blocked cells map of playerSnake for moving from one 
+    // cell to another.
+    std::size_t nextMaxPossibleTimeSteps = ceil(1 / speed);
+
     // Get the initial number of steps it will take to get to the goal if there were no blocked cells.
     std::size_t initialMaxTimeSteps = CalculateHeuristic(
         _head_x, _head_y, speed, goalX, goalY, gridWidth, gridHeight
-    );
+    ) + nextMaxPossibleTimeSteps;
 
     // Add a buffer amount of timeSteps to allow the snake's body to pass in front of an obstacle snake after 
     // it eats the food. This is because if obstacleSnake blocked cells are only predicted up to the time the
@@ -479,11 +484,7 @@ void AISnake::FindPath() {
     _predictedObstaclesBlockedCells.clear();
     _predictedPlayerBlockedCells.clear();
 
-    PredictSnakesBlockedCells(initialMaxTimeSteps, initialMaxTimeSteps + _tailToPastGoalTime);
-
-    // Calculate the max number of timeStep required in blocked cells map of playerSnake for moving from one 
-    // cell to another.
-    std::size_t nextMaxPossibleTimeSteps = ceil(1 / speed);
+    PredictSnakesBlockedCells(initialMaxTimeSteps, initialMaxTimeSteps + _tailToPastGoalTime);    
 
     // Clear previous path variables.
     _IsGuaranteedPathFound = false;
@@ -577,6 +578,20 @@ void AISnake::FindPath() {
         for (std::size_t i=0; i<snakeSize; i++) {
             currentBodyCells.push_back(nodePtr->cell_);
             nodePtr = nodePtr->parent_;
+        }
+
+        std::size_t nextMaxPossibleTimeStepIndex = current->gCost_ + nextMaxPossibleTimeSteps;
+        if(_predictedPlayerBlockedCells.count(nextMaxPossibleTimeStepIndex) == 0) {
+            std::cout << "                      Adding TimeSteps  Before Attempting to add nodes"<< std::endl;
+            // You may not have enough timeSteps in both _predictedPlayerBlockedCells and _
+            // _predictedObstacleBlockedCells maps to add all subsequent nodes in AddNode()
+            // predict more from current head location to goal again.
+            std::size_t nextMaxTimeStep = nextMaxPossibleTimeStepIndex +
+            CalculateHeuristic(
+                current->headX_, current->headY_, speed, goalX, goalY, gridWidth, gridHeight
+            );
+            
+            PredictSnakesBlockedCells(nextMaxTimeStep, nextMaxTimeStep + _tailToPastGoalTime);
         }
 
         /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
@@ -726,11 +741,11 @@ void AISnake::PredictSnakesBlockedCells(std::size_t playerMaxTimeStep, std::size
     // Starting at time step 0.
     auto playerFuture = std::async(std::launch::async,
                                    &AISnake::PredictPlayerBlockedCells,
-                                   this, 0, playerMaxTimeStep);
+                                   this, _predictedPlayerBlockedCells.size(), playerMaxTimeStep);
     
-    auto obstacleFuture = std::async(std::launch::async,
+    auto obstacleFuture = std::async(std::launch::deferred,
                                      &AISnake::PredictObstacleBlockedCells,
-                                     this, 0, obstacleMaxTimeStep);
+                                     this, _predictedObstaclesBlockedCells.size(), obstacleMaxTimeStep);
     
     // Wait for both tasks to complete so that the maps are fully populated.
     playerFuture.wait();
