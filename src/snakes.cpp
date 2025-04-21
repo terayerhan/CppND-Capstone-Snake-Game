@@ -196,61 +196,16 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
             currentBodyCells.push_front(nextHeadCell);   // Add head to front of deque.
 
-            if (std::find(
+            // Check for self-collision and collision with playerSnake
+            if ((std::find(
                 currentBodyCells.begin() + 1, currentBodyCells.end(), nextHeadCell)
-                != currentBodyCells.end()
+                != currentBodyCells.end()) ||
+                (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) > 0)
             ) {
-                    std::cout << "Predicted Self_Collision before Checking with player "<< std::endl;
-                    return nullptr;
-            }
-
-            // Check for collision with playerSnake 
-            /* Check if nextTimeStep is a key in  the unordered_map of  _predictedPlayerBlockedCells
-               (which also implies in same for _predictedObstacleBlockedCells since the max time step 
-               of prediction is same for both). If the time step is not in the unordered_map, 
-               Generate more predicted blocked cells for both playerSnake and obstacle snakes up to
-               the heuristic of the nextCell. 
-            */
-            if (_predictedPlayerBlockedCells.count(nextTimeStep)) {
-                /* nextTimeStep exist in the blockedCells unordered_maps, check for collision
-                   playerSnake and self. 
-                */
-                if (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) ) {
-                    // Taking this direction from the current node will result in a collision with either 
-                    // player sanke or self. Return nullptr to indicate this.
-                    return nullptr;
-                }
-            }
-            else {
-                std::cout << "                                                     Need MOre  TimeSteps "<< std::endl;
-                /* nextTimeStep does not exist Generate more time steps enough to reach the goal(food) */
-                /* PredictObstacleBlockedCells(
-                    nextTimeStep,
-                    CalculateHeuristic(
-                        nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
-                        _grid.GetWidth(), _grid.GetHeight()
-                    )
-                );
-
-                PredictPlayerBlockedCells(
-                    nextTimeStep,
-                    CalculateHeuristic(
-                        nextHeadX, nextHeadY, speed, _food.GetCellX(), _food.GetCellY(),
-                        _grid.GetWidth(), _grid.GetHeight()
-                    )
-                ); */
-
-                /* nextTimeStep Should Now exist in the blockedCells unordered_maps, check for collision
-                   playerSnake. 
-                */
-                /* if (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) ) {
-                    std::cout << "Predicted Collision with PlayerSnake after adding more TimeSteps "<< std::endl;                                           
-                    return nullptr;
-                } */
-            }
-
-        }  // End checking if snake will reach next cell.
-
+                //std::cout << "Predicted Self_Collision and/or playerSnake collision "<< std::endl;
+                return nullptr;
+            } 
+        }  
 
         // Check obstacle collision with aiSnake and aiSnake collision with obstacles at nextTimeStep.
         for (const SDL_Point& cell : currentBodyCells) {
@@ -275,8 +230,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
             nextHeadY,
             nextDirection,
             current
-        ); 
-        
+        );         
         
         // Optional: Check if the path gurantees that there will be no collision of obstacles into aiSnake's body
         // after it eats the food. This is an overly cautious attempt at making sure that there is no collision of
