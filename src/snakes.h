@@ -5,7 +5,9 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
+#include <mutex>
 #include <future>
+#include <queue>
 
 struct Node {
    SDL_Point cell_;
@@ -169,14 +171,19 @@ class  AISnake : public Snake {
    void PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
    void PredictPlayerBlockedCells(std::size_t initialTimeStep, std::size_t maxTimeStep);
 
-   std::shared_ptr<Node> AddNode( 
+   void AddNode( 
       std::shared_ptr<Node> current, Direction nextDirection, 
-      std::deque<SDL_Point> currentBodyCells
+      const std::deque<SDL_Point>& currentNodeBodyCells,
+      std::priority_queue<std::shared_ptr<Node>,
+         std::vector<std::shared_ptr<Node>>,
+         NodeCompare>& openList,
+      std::mutex& openListMutex
    );
 
    void ReconstructPath(std::shared_ptr<Node> current);
    void ReconstructPartialPath(std::shared_ptr<Node> partialNode);
    void PredictSnakesBlockedCells(std::size_t playerMaxTimeStep, std::size_t obstacleMaxTimeStep);
+   std::mutex _pathMutex;
 
    
    //void ReviewPath();

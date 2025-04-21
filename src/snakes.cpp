@@ -1,6 +1,5 @@
 #include "snakes.h"
 
-#include <queue>
 #include <iostream>
 #include <chrono>
 
@@ -120,9 +119,16 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
 }
 
 
-std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
-    std::deque<SDL_Point> currentBodyCells
+void AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
+    const std::deque<SDL_Point>& currentNodeBodyCells,
+    std::priority_queue<std::shared_ptr<Node>,
+        std::vector<std::shared_ptr<Node>>,
+        NodeCompare>& openList,
+    std::mutex& openListMutex
     ) {
+    
+    // Copy bodyCells into a modifiable local deque
+    auto currentBodyCells = currentNodeBodyCells;
     
     // Initialize the nextNode variables
     std::shared_ptr<Node> nextNode = nullptr;
@@ -203,7 +209,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) > 0)
             ) {
                 //std::cout << "Predicted Self_Collision and/or playerSnake collision "<< std::endl;
-                return nullptr;
+                return;
             } 
         }  
 
@@ -214,7 +220,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                     ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
                     to indicate this. 
                 */
-                return nullptr;
+                return;
             }
         }
 
@@ -306,8 +312,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                         /* std::cout << "checking  Obstacle_Collision After reaching goal"<< std::endl; */
 
                         if (_predictedObstaclesBlockedCells[i].count(cell) ) { 
-                            ReconstructPartialPath(nextNode);
-                            return nullptr; 
+                            {
+                                std::lock_guard<std::mutex> pathLock(_pathMutex);
+                                ReconstructPartialPath(nextNode);
+                            }
+                            return; // Do not add the goal node that cannot guarantee collision freeness.
                         }
                     } 
                 }
@@ -315,23 +324,31 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
 
             // A collision free guaranteed path is found or aggressionLevel is set to maximum. Reconstruct path and
             // end pathFinding.
-            ReconstructPath(nextNode);
+            /* ReconstructPath(nextNode);
 
             // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
             // This is to enable early exit of FindPath().
-            _IsGuaranteedPathFound = true;
-            return nullptr;  // dummy node to return to FindPath() and terminate search.
-
+            _IsGuaranteedPathFound = true; */
+            //return nullptr;  // dummy node to return to FindPath() and terminate search.
+            // push into the openList under lock
+            {
+                std::lock_guard<std::mutex> lock(openListMutex);
+                openList.push(nextNode);
+            }
+            return;
         }        
 
         
     } // End of while loop moving snake and checking collisions.
 
     /* Snake will arrive in next cell with no collision againt or by ObstacleSnake and no collision with
-       playerSnake or self when it take nextDirection from current position in current cell. return 
-       shared_ptr to resulting Node.
+       playerSnake or self when it take nextDirection from current position in current cell. 
+       Push node onto openList. nextNode will not be nullptr at this point so no need to check before pushing.
     */
-    return nextNode;
+    {
+        std::lock_guard<std::mutex> lock(openListMutex);
+        openList.push(nextNode);
+    }
     
 }
 
@@ -361,8 +378,9 @@ void AISnake::FindPath() {
     auto startTime = std::chrono::steady_clock::now();
     const long timeoutInMs = 500; // 500 milliseconds
 
-    // Priority queue for open set.
+    // Priority queue for open set with mutex for thread safety.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
+    std::mutex openListMutex;
 
     /*  To enable backtracking by snake size[- when snake size is greater than 1 otherwise there is no need] 
         to reconstruct the cells of the snake, create dummy Node shared_ptrs from the body cells that are not 
@@ -477,6 +495,21 @@ void AISnake::FindPath() {
         std::shared_ptr<Node> current = openList.top();  // Get the node ptr with the least fCost.
         openList.pop();                                  // Remove the node ptr from the openList.
 
+        // Check if A collision free guaranteed path is found or aggressionLevel is set to maximum. 
+        // Reconstruct path and end pathFinding.
+        if (current->cell_ == goal) {
+            ReconstructPath(current);
+            // Set the IsGuaranteedPathFound flag to signal that a a guaranteed collision free path is found.
+            _IsGuaranteedPathFound = true;
+            std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
+            std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
+            // Check time to get cautious path.
+            auto currentTime = std::chrono::steady_clock::now();
+            auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+            std::cout << "Time to Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
+            return;
+        }
+
         // Check timeout.
         auto currentTime = std::chrono::steady_clock::now();
         auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
@@ -551,6 +584,7 @@ void AISnake::FindPath() {
         /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
            node through each direction from current node float head position.
         */
+        std::vector<std::future<void>> addNodefutures;
         for (const Direction nextDirection : possibleDirections) {
             // If the snake is longer than one segment, check if the next direction is
             // the opposite of the current node's direction (i.e., the direction towards the snake's neck).
@@ -561,23 +595,23 @@ void AISnake::FindPath() {
                 continue; // Skip the reverse direction.
             }
 
-            // Attempt to create a new node in the specified nextDirection
-            /* std::cout<< "AddNode() started"<<"  "<< "  CurrentCell: "<< "  " <<
-            current->cell_.x << "  "<< current->cell_.y << 
-            "  gCost: " << current->gCost_ <<
-            "  fCost: " << current->fCost_ <<
-            
-            "  head: " << current->headX_ << "  "<< current->headY_ <<
-            "  Goal: " << goal.x << " " << goal.y<< 
-            "  Speed: "<< GetSpeed() 
-            //"  parentCell: " << current->parent_ != nullptr ? current->parent_->cell_.x :   << "  " <<current->parent_->cell_.y
-            <<  "   NextDirection: "<< static_cast<int>(nextDirection)<< std::endl;
-            std::cout << "  currentDirection: "<< static_cast<int>(current->direction_)<<
-            "  oppositeDir: " << static_cast<int>(OppositeDirection(current->direction_)) << std::endl; */
-            std::shared_ptr<Node> nextNodePtr = AddNode(current, nextDirection, currentBodyCells);
+            // Attempt to create a new node in the specified nextDirection.
+            // Launch the async expansion & enqueue
+            addNodefutures.push_back(
+                std::async(
+                    std::launch::async,
+                    &AISnake::AddNode,
+                    this,
+                    current,
+                    nextDirection,
+                    currentBodyCells,
+                    std::ref(openList),
+                    std::ref(openListMutex)
+                )
+            );
 
             // Check if a guaranteed collision free path is found so as to end path finding early.
-            if (_IsGuaranteedPathFound) {
+            /* if (_IsGuaranteedPathFound) {
                 std::cout << "Guranteed Collision Free Path Found -- End FindPath()"<< std::endl;
                 std::cout << "PathDirections Size: " << _pathDirections.size() << std::endl;
                 // Check time to get cautious path.
@@ -585,23 +619,28 @@ void AISnake::FindPath() {
                 auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
                 std::cout << "Time to Find Cautious Collision free Path (" << elapsedMs << "ms)" << std::endl;
                 return;  // Perfect Path found, exit the function.
-            }
+            } */
             
 
             // If the node was successfully created (i.e., not null), add it to the open list.
-            if (nextNodePtr != nullptr) {
-                /* std::cout<< "AddNode() End    NextCell: "<< nextNodePtr->cell_.x<< "  " << nextNodePtr->cell_.y <<
-                "  gCost: " << nextNodePtr->gCost_ << "  fCost: " << nextNodePtr->fCost_ <<
-                "  head: " << nextNodePtr->headX_ << "  "<< nextNodePtr->headY_ 
-                << std::endl; */
-                // If the node is valid, push its pointer onto the open list (a priority queue).
-                // The open list is used in pathfinding algorithms (e.g., A*) to store nodes that 
-                // are pending exploration.
-                openList.push(nextNodePtr); // Enqueue the node for further processing.
-            }
-            else{
-                /* std::cout<< "AddNode() End    NextCell:  InVAlid  "<< std::endl; */
-            }
+            // if (nextNodePtr != nullptr) {
+            //     /* std::cout<< "AddNode() End    NextCell: "<< nextNodePtr->cell_.x<< "  " << nextNodePtr->cell_.y <<
+            //     "  gCost: " << nextNodePtr->gCost_ << "  fCost: " << nextNodePtr->fCost_ <<
+            //     "  head: " << nextNodePtr->headX_ << "  "<< nextNodePtr->headY_ 
+            //     << std::endl; */
+            //     // If the node is valid, push its pointer onto the open list (a priority queue).
+            //     // The open list is used in pathfinding algorithms (e.g., A*) to store nodes that 
+            //     // are pending exploration.
+            //     openList.push(nextNodePtr); // Enqueue the node for further processing.
+            // }
+            // else{
+            //     /* std::cout<< "AddNode() End    NextCell:  InVAlid  "<< std::endl; */
+            // }
+        }
+
+        // Wait for all four (or however many) to complete before picking the next openList.top()
+        for (auto &f : addNodefutures) {
+            f.wait();
         }
 
         notFirstIteration = true;
