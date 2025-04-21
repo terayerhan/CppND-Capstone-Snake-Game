@@ -119,12 +119,12 @@ void AISnake::PredictObstacleBlockedCells(std::size_t initialTimeStep, std::size
 }
 
 
-std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
-    const std::deque<SDL_Point>& currentNodeBodyCells
-    /* std::priority_queue<std::shared_ptr<Node>,
+void AISnake::AddNode( std::shared_ptr<Node> current, Direction nextDirection, 
+    const std::deque<SDL_Point>& currentNodeBodyCells,
+    std::priority_queue<std::shared_ptr<Node>,
         std::vector<std::shared_ptr<Node>>,
         NodeCompare>& openList,
-    std::mutex& openListMutex */
+    std::mutex& openListMutex
     ) {
     
     // Copy bodyCells into a modifiable local deque
@@ -209,7 +209,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                 (_predictedPlayerBlockedCells[nextTimeStep].count(nextHeadCell) > 0)
             ) {
                 //std::cout << "Predicted Self_Collision and/or playerSnake collision "<< std::endl;
-                return nullptr;
+                return;
             } 
         }  
 
@@ -220,7 +220,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                     ObstacleSnake or an ObstacleSnake will collide with this snake. Return nullptr 
                     to indicate this. 
                 */
-                return nullptr;
+                return;
             }
         }
 
@@ -316,7 +316,7 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
                                 std::lock_guard<std::mutex> pathLock(_pathMutex);
                                 ReconstructPartialPath(nextNode);
                             }
-                            return nullptr; // Do not add the goal node that cannot guarantee collision freeness.
+                            return; // Do not add the goal node that cannot guarantee collision freeness.
                         }
                     } 
                 }
@@ -331,11 +331,11 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
             _IsGuaranteedPathFound = true; */
             //return nullptr;  // dummy node to return to FindPath() and terminate search.
             // push into the openList under lock
-            // {
-            //     std::lock_guard<std::mutex> lock(openListMutex);
-            //     openList.push(nextNode);
-            // }
-            return nextNode;
+            {
+                std::lock_guard<std::mutex> lock(openListMutex);
+                openList.push(nextNode);
+            }
+            return;
         }        
 
         
@@ -345,11 +345,10 @@ std::shared_ptr<Node> AISnake::AddNode( std::shared_ptr<Node> current, Direction
        playerSnake or self when it take nextDirection from current position in current cell. 
        Push node onto openList. nextNode will not be nullptr at this point so no need to check before pushing.
     */
-    // {
-    //     std::lock_guard<std::mutex> lock(openListMutex);
-    //     openList.push(nextNode);
-    // }
-    return nextNode;
+    {
+        std::lock_guard<std::mutex> lock(openListMutex);
+        openList.push(nextNode);
+    }
     
 }
 
@@ -585,7 +584,7 @@ void AISnake::FindPath() {
         /* Explore neighbor nodes in each possible direction. That is: explor moving to the next 
            node through each direction from current node float head position.
         */
-        std::vector<std::future<std::shared_ptr<Node>>> addNodefutures;
+        std::vector<std::future<void>> addNodefutures;
         for (const Direction nextDirection : possibleDirections) {
             // If the snake is longer than one segment, check if the next direction is
             // the opposite of the current node's direction (i.e., the direction towards the snake's neck).
@@ -605,9 +604,9 @@ void AISnake::FindPath() {
                     this,
                     current,
                     nextDirection,
-                    currentBodyCells/* ,
+                    currentBodyCells,
                     std::ref(openList),
-                    std::ref(openListMutex) */
+                    std::ref(openListMutex)
                 )
             );
 
@@ -640,13 +639,8 @@ void AISnake::FindPath() {
         }
 
         // Wait for all four (or however many) to complete before picking the next openList.top()
-        for (auto &f : addNodefutures) {
-            std::shared_ptr<Node> nextNode = f.get();
-            if (nextNode != nullptr) {
-                //std::lock_guard<std::mutex> lock(openListMutex);
-                openList.push(nextNode);            
-                
-            }
+        for (auto &future : addNodefutures) {
+            future.wait();
         }
 
         notFirstIteration = true;
