@@ -248,6 +248,9 @@ void Game::CheckCollisions() {
   // Check if playerSnake's health is zero and end game if it is.
   if (_playerSnake._health < 1) {
     _playerSnake._alive = false;
+
+    // Set AISnakes _IsInCollision flag so that it stops does not call FindPath() when player snake is not alive.
+    _aiSnake._IsInCollision = true;
     return; // if player is no longer alive, no need to continue.
   }
 
