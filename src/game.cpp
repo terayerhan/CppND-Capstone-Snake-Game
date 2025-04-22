@@ -100,7 +100,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
       _topScore = currentScore;
 
       // Persist in background (fire-and-forget)
-      std::async(std::launch::async,
+      auto fut = std::async(std::launch::async,
                 &TopScoreManager::SaveTopScore,
                 &_topScoreManager,
                 currentScore);
