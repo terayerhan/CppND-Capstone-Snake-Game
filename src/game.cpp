@@ -16,8 +16,8 @@ Game::Game(Grid& grid)
   // Initialize obstacles using list-initialization.
   _obstacles{
     ObstacleSnake(grid, _food, 0.03f, 0.003f, Direction::kDown, SDL_Point{10, 10}, 5),
-    ObstacleSnake(grid, _food, 0.03f, 0.003f, Direction::kUp,   SDL_Point{20, 20}, 5),
-    //ObstacleSnake(grid, _food, 0.03f, 0.003f, Direction::kLeft, SDL_Point{30, 30}, 5)
+    ObstacleSnake(grid, _food, 0.03f, 0.003f, Direction::kUp,   SDL_Point{20, 20}, 4),
+    ObstacleSnake(grid, _food, 0.03f, 0.003f, Direction::kLeft, SDL_Point{30, 30}, 2)
   },
 
   // Initialize the player snake at the center of the grid.
