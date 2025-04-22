@@ -376,7 +376,7 @@ void AISnake::FindPath() {
 
     // Record start time.
     auto startTime = std::chrono::steady_clock::now();
-    const long timeoutInMs = 500; // 500 milliseconds
+    const long timeoutInMs = 250; // 500 milliseconds
 
     // Priority queue for open set with mutex for thread safety.
     std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeCompare> openList;
@@ -720,12 +720,9 @@ void AISnake::ReconstructPartialPath(std::shared_ptr<Node> current) {
 
     ReconstructPath(current);
 
-    if(_pathCells.size() > nextSnakeSize) {
-        _pathReCalcPoint = _pathCells[nextSnakeSize];
-    }
-    else {
-        _pathReCalcPoint = _pathCells.back();
-    }
+    if(_pathCells.size() > 0) {
+        _pathReCalcPoint = _pathCells[nextSnakeSize * 3/4];
+    }    
 }
 
 
