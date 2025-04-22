@@ -16,8 +16,9 @@ class Renderer {
     PlayerSnake const &playerSnake,
     AISnake const &aiSnake, Food const &food
   );
-  
+
   void UpdateWindowTitle(int score, int topScore, int fps);
+  void UpdateWindowTitle(int score, int topScore, int fps, const std::string &message);
 
  private:
   SDL_Window *sdl_window;

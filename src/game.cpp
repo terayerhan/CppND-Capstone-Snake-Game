@@ -116,7 +116,14 @@ void Game::Run(Controller const &controller, Renderer &renderer,
 
     // After every second, update the window title.
     if (frame_end - title_timestamp >= 1000) {
-      renderer.UpdateWindowTitle(currentScore, _topScore, frame_count);
+      if (_playerSnake._alive) {
+        renderer.UpdateWindowTitle(currentScore, _topScore, frame_count);
+      }
+      else {
+        // show the final scores plus “Game Over” in the title
+        renderer.UpdateWindowTitle(currentScore, _topScore, frame_count, "Game Over");
+      }
+      
       frame_count = 0;
       title_timestamp = frame_end;
     }
