@@ -38,7 +38,9 @@ Game::Game(Grid& grid)
     }, // initial head for the AI snake.
     _obstacles, _playerSnake,
     1  //_aggressionLevel hardcoded for testing for now. This value should be dictated by user game settings.
-  )
+  ),
+
+  _topScoreManager("topscore.txt")
 {
   // Populate the vector of snake pointers for collision checks, etc.
   for (auto& obs : _obstacles) {
@@ -50,6 +52,9 @@ Game::Game(Grid& grid)
 
   // Place food in an empty cell.
   PlaceFood();
+
+  // Load the all‑time top score
+  _topScore = _topScoreManager.LoadTopScore();
 }
 
 
@@ -87,6 +92,19 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     }
     
     Update();
+
+    // Check if current score beats top score and save it if so.
+    int currentScore = GetScore();
+    if (currentScore > _topScore) {
+      // New record in memory
+      _topScore = currentScore;
+
+      // Persist in background (fire-and-forget)
+      std::async(std::launch::async,
+                &TopScoreManager::SaveTopScore,
+                &_topScoreManager,
+                currentScore);
+    }
     renderer.Render(_obstacles, _playerSnake, _aiSnake, _food);
 
     frame_end = SDL_GetTicks();
@@ -98,7 +116,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
 
     // After every second, update the window title.
     if (frame_end - title_timestamp >= 1000) {
-      renderer.UpdateWindowTitle(GetScore(), frame_count);
+      renderer.UpdateWindowTitle(currentScore, _topScore, frame_count);
       frame_count = 0;
       title_timestamp = frame_end;
     }

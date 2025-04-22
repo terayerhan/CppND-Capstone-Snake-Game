@@ -7,6 +7,7 @@
 #include "renderer.h"
 #include "snake.h"
 #include "snakes.h"
+#include "top_score_manager.h"
 
 class Game {
  public:
@@ -33,6 +34,8 @@ class Game {
 
   int score{0};
   SDL_Point _previouFoodPosition = _food._position; // For detecting when food has been replaced.
+  TopScoreManager _topScoreManager;
+  int _topScore{0};
 
   SDL_Point GetEmptyCell();
   void CheckCollisions();

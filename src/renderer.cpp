@@ -96,7 +96,10 @@ void Renderer::Render(
   SDL_RenderPresent(sdl_renderer);
 }
 
-void Renderer::UpdateWindowTitle(int score, int fps) {
-  std::string title{"Snake Score: " + std::to_string(score) + " FPS: " + std::to_string(fps)};
+void Renderer::UpdateWindowTitle(int score, int topScore, int fps) {
+  // display both current and all‑time top score
+  std::string title = "Score: " + std::to_string(score)
+                    + "  Top: "   + std::to_string(topScore)
+                    + "  FPS: "   + std::to_string(fps);
   SDL_SetWindowTitle(sdl_window, title.c_str());
 }
