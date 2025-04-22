@@ -112,5 +112,9 @@ float Snake::GetDistanceInHeadCell() const {
 
     case Direction::kRight:
       return _head_x - headX;      // Distance from left edge of cell
+    
+    default:
+      // Should never happen—cover all enum values—but silences the warning.
+      return 0.0f;
   }
 }
