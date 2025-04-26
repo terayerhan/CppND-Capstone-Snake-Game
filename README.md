@@ -20,7 +20,7 @@ A 2D Snake game developed in modern C++ with SDL2, created as the final capstone
 
 ## Screenshot
 
-![Gameplay](SnakeGamePlaytillgameover.gif)
+![Gameplay](SnakeGamePlayScore5.gif)
 
 ## Dependencies
 * cmake >= 3.7
@@ -52,7 +52,7 @@ From the `build/` directory:
 ```
 #### How to Play:
 
-- Use the arrow keys to control the blue snake (player).
+- Use the arrow keys to control the blue head snake (player's snake).
 - Eat the yellow food to grow longer and increase your score.
 - Avoid collisions with walls, your own body, AI snake, and dynamic obstacle snakes.
 - Your score and all-time top score are displayed in the window title.
