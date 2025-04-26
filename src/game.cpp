@@ -177,14 +177,11 @@ void Game::CheckCollisions() {
   if (_playerSnake.HasSelfCollision()) { 
     _playerSnake.Decelerate();
     _playerSnake.ReduceHealth(1); 
-    //_playerSnake.Shrink(1);
   }
 
   if (_aiSnake.HasSelfCollision()) { 
     _aiSnake.Decelerate();
-    //_aiSnake.Shrink();
     _aiSnake._IsInCollision = true;
-    std::cout << " Self_Collision Detected!!"<< std::endl;
   }
 
   // Cache the head of playerSnake and AISnake.
@@ -247,7 +244,6 @@ void Game::CheckCollisions() {
       if (_aiSnake.IsHitBy(obstacleCell)) {
         _aiSnake.Decelerate();
         _aiSnake._IsInCollision = true;
-        std::cout << "ObstacleSnake_Collision Detected"<< std::endl;
       }
     }
   }
@@ -268,7 +264,6 @@ void Game::CheckCollisions() {
     // Grow the only snake that got to the food cell.
     auto& growingSnake = *(snakesAtFoodCellPtrs.back());
     growingSnake.Grow();
-    std::cout << "Food eatten by a Snake"<< std::endl;
     growingSnake.Accelerate();
     PlaceFood();
   }
