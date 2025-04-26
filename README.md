@@ -156,7 +156,7 @@ Node (used in A* pathfinding)
     - Each possible movement direction spawns an asynchronous call to `AddNode()` via `std::async`.
     - These tasks concurrently generate path nodes and insert them into a shared `openList`, protected by a `std::mutex`.
     - The futures are collected in a `std::vector<std::future<void>>` and synchronized with `.wait()` to ensure thread safety and completion.
-    - This improves pathfinding responsiveness, especially under time constraints.
+    
 
 - **Futures**: `std::future` objects returned by `std::async` are used to synchronize background operations (`future.wait()`), fulfilling the promise/future mechanism for thread communication (`src/game.cpp`, `src/snakes.cpp`).
 - **Mutexes**: `std::mutex` instances (`openListMutex`, `_pathMutex`) are declared and passed to pathfinding functions to protect shared data structures in concurrent contexts (`src/game.h`, `src/snakes.cpp`).
